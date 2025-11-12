@@ -1,2 +1,8 @@
+# 모든 검색 로봇에게 적용
 User-agent: *
-Allow:/
+
+# 루트 디렉토리(/)를 포함한 모든 페이지의 크롤링을 허용함
+Allow: /
+
+# 사이트맵 파일의 위치를 검색 로봇에게 명시적으로 알려줌
+Sitemap: https://adassdagfa.github.io/sitemap.xml
