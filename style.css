@@ -1,0 +1,186 @@
+/* --- Global Settings --- */
+body {
+    background-color: #050a0e;
+    color: #e2e8f0;
+    overflow-x: hidden;
+    /* 기본적으로 auto를 사용하여 데스크탑에서만 커스텀 커서가 작동하도록 설정 */
+    cursor: auto;
+}
+
+/* --- Background Effects --- */
+.cyber-grid-bg {
+    background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: center center;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+.scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 99;
+}
+
+/* --- Animations & Effects --- */
+.glitch-text {
+    animation: glitch 1.5s infinite alternate-reverse;
+}
+
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(-2px, 2px);
+    }
+
+    40% {
+        transform: translate(-2px, -2px);
+    }
+
+    60% {
+        transform: translate(2px, 2px);
+    }
+
+    80% {
+        transform: translate(2px, -2px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+/* --- Card Styles --- */
+.cyber-card {
+    position: relative;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    background-color: #0d171d;
+}
+
+    .cyber-card:hover {
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+        border-color: #00f3ff;
+        transform: translateY(-5px);
+    }
+
+        .cyber-card:hover:before {
+            transform: scaleX(1);
+        }
+
+/* --- Custom Cursor --- */
+.cursor-dot, .cursor-outline {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    z-index: 10001;
+    transition: transform 0.1s ease, opacity 0.3s ease;
+}
+
+/* ⭐ 수정: 모바일 화면(767px 이하)에서는 커스텀 커서 숨김 및 기본 커서 제거 ⭐ */
+@media (max-width: 767px) {
+    .cursor-dot, .cursor-outline {
+        display: none !important;
+    }
+    /* 모바일에서 마우스/터치 포인터 완전히 숨김 */
+    body {
+        cursor: none !important;
+    }
+}
+
+.cursor-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #00f3ff;
+    box-shadow: 0 0 10px #00f3ff;
+}
+
+.cursor-outline {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #00f3ff;
+    transition: transform 0.3s ease-out, background-color 0.3s ease-out;
+}
+
+/* --- Image Carousel (Gallery) --- */
+.carousel-track-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+    /* 마우스 올리면 멈춤 효과 */
+    .carousel-track-container:hover .carousel-track {
+        animation-play-state: paused;
+    }
+
+.carousel-track {
+    display: flex;
+    width: max-content;
+    animation: scroll-rtl linear infinite;
+}
+
+    .carousel-track img {
+        height: 180px; /* PC 기본 크기 */
+        width: auto;
+        margin-right: 20px;
+        flex-shrink: 0;
+        border: 1px solid #333;
+        border-radius: 4px;
+        transition: all 0.3s;
+        filter: grayscale(80%) brightness(0.8);
+        cursor: zoom-in;
+    }
+
+/* ⭐ 수정: 모바일 갤러리 크기 조정 (767px 이하) ⭐ */
+@media (max-width: 767px) {
+    .carousel-track img {
+        height: 120px; /* 모바일에서 이미지 높이 감소 */
+        margin-right: 10px; /* 모바일에서 간격 감소 */
+    }
+}
+
+.carousel-track img:hover {
+    filter: grayscale(0%) brightness(1.2);
+    border-color: #00f3ff;
+    box-shadow: 0 0 15px #00f3ff;
+    transform: scale(1.05);
+}
+
+/* ⭐ 무한 반복 애니메이션 정의 (JS에서 복제된 이미지 덕분에 끊김 없이 반복) ⭐ */
+@keyframes scroll-rtl {
+    0% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(-50%); /* 트랙의 절반만큼 이동 */
+    }
+}
+
+
+/* ⭐ 트랙별 속도 설정 및 애니메이션 연결 (모두 R-to-L) ⭐ */
+.track-slow {
+    animation: scroll-rtl linear infinite;
+    animation-duration: 60s; /* 느린 속도 */
+}
+
+.track-medium {
+    animation: scroll-rtl linear infinite;
+    animation-duration: 45s; /* 중간 속도 */
+}
+
+.track-fast {
+    animation: scroll-rtl linear infinite;
+    animation-duration: 30s; /* 빠른 속도 */
+}

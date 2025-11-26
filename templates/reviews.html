@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>고객 후기 목록 - 컴퓨터이리온</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">
+
+</head>
+<body>
+    <div class="container">
+        <h1>컴퓨터 이리온 고객 후기</h1>
+
+        <div class="write-button">
+            <a href="{{ url_for('write_review') }}" class="btn">후기 남기기</a>
+        </div>
+
+        {% for review in reviews %}
+        <div class="review-item">
+            <div class="review-header">
+                <span class="review-name">{{ review.name }}</span>
+                <span class="review-date">{{ review.created_at }}</span>
+            </div>
+
+            <div class="review-content">{{ review.content }}</div>
+
+            {% if review.image_path %}
+            <div class="review-image">
+                <img src="/{{ review.image_path }}" alt="첨부 이미지">
+            </div>
+            {% endif %}
+
+            <div class="review-actions">
+                <a href="{{ url_for('delete_review', review_id=review.id) }}"
+                   onclick="return confirm('정말로 이 후기를 삭제하시겠습니까?');"
+                   style="color: red; text-decoration: none; font-size: 0.9em; float: right;">
+                    [삭제]
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <p style="text-align:center;">아직 작성된 후기가 없습니다. 첫 번째 후기를 남겨주세요!</p>
+        {% endfor %}
+
+        <p style="margin-top:30px; text-align:center;"><a href="/">← 메인 페이지로 돌아가기</a></p>
+    </div>
+</body>
+</html>

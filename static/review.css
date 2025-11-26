@@ -1,0 +1,137 @@
+/* review.css */
+
+/* 전체 배경 및 컨테이너 설정 */
+body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    padding: 20px;
+    background-color: #eef1f6; /* 약간 푸른빛이 도는 밝은 배경 */
+    color: #333;
+}
+
+.container {
+    max-width: 850px;
+    margin: 30px auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 제목 스타일 */
+h1 {
+    text-align: center;
+    color: #2c3e50; /* 짙은 색 */
+    margin-bottom: 25px;
+    border-bottom: 3px solid #3498db; /* 파란색 밑줄 */
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+
+/* 후기 남기기 버튼 스타일 */
+.write-button {
+    text-align: right;
+    margin-bottom: 30px;
+}
+
+.btn {
+    background-color: #2ecc71; /* 생동감 있는 녹색 */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 50px; /* 둥근 버튼 */
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);
+}
+
+.btn:hover {
+    background-color: #27ae60;
+}
+
+/* 후기 개별 항목 스타일 */
+.review-item {
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background-color: #fcfcfc;
+    transition: box-shadow 0.3s;
+}
+
+.review-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 후기 헤더 (이름, 날짜) */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #eee;
+}
+
+.review-name {
+    font-weight: 700;
+    color: #3498db; /* 파란색 강조 */
+    font-size: 1.1em;
+}
+
+.review-date {
+    font-size: 0.85em;
+    color: #95a5a6; /* 회색으로 날짜 처리 */
+}
+
+/* 후기 내용 */
+.review-content {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* 이미지 첨부 */
+.review-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-top: 10px;
+    border: 1px solid #eee;
+}
+
+/* 삭제 버튼 및 액션 */
+.review-actions {
+    overflow: auto;
+    padding-top: 10px;
+}
+
+.review-actions a {
+    color: #e74c3c; /* 빨간색 삭제 링크 */
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.review-actions a:hover {
+    color: #c0392b;
+}
+
+/* 메인 페이지 돌아가기 링크 */
+.container > p {
+    margin-top: 40px !important;
+}
+
+.container > p a {
+    color: #34495e;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.container > p a:hover {
+    color: #555;
+    text-decoration: underline;
+}
