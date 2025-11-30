@@ -2,43 +2,30 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ⭐ 중요! 서버 주소 변경 (NAS 기본 포트 5000번으로 통신) ⭐
-    const SERVER_URL = 'http://yellowneko.iptime.org:5000/api';
+    // ⭐ 수정됨: NAS의 내부 IP 주소로 변경하여 NAT Loopback 문제 우회 ⭐
+    const SERVER_URL = 'http://192.168.0.100:5000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
     const postListBody = document.getElementById('post-list-body');
     const tabInquiry = document.getElementById('tab-inquiry');
     const tabReview = document.getElementById('tab-review');
     const writePostButton = document.getElementById('write-post-button');
     const postCountInfo = document.getElementById('post-count-info');
-
-    // 1. 모달 관련 DOM 요소
     const writeModal = document.getElementById('write-modal');
-    const closeModalButton = document.getElementById('close-modal-button');
-    const postForm = document.getElementById('post-form');
-    const modalTitle = document.getElementById('modal-title');
-    const postTypeInput = document.getElementById('post-type-input');
-    const guestFields = document.getElementById('guest-fields');
-    const guestNameInput = document.getElementById('guest-name');
-    const guestPasswordInput = document.getElementById('guest-password');
-    const requiredGuestFields = [guestNameInput, guestPasswordInput];
-
+    const closeWriteModalButton = document.getElementById('close-write-modal');
+    const writeForm = document.getElementById('write-form');
+    const writePostType = document.getElementById('write-post-type');
+    const guestInputGroup = document.getElementById('guest-input-group'); // 비회원 입력 필드
 
     let currentBoardType = 'inquiry'; // 초기값은 1:1 문의
-    // ⭐ ⭐ ⭐ 현재 로그인 상태를 가정합니다. ⭐ ⭐ ⭐
-    // 실제 로그인 기능 구현 시 이 변수의 값을 변경해야 합니다.
-    let isUserLoggedIn = false;
+    let isUserLoggedIn = !!localStorage.getItem('authToken');
 
-    // ----------------------------------------------------
-    // 유틸리티 함수
-    // ----------------------------------------------------
-
-    // 닉네임 마스킹 (예: 홍길동 -> 홍*동)
+    // 유틸리티 함수: 닉네임 마스킹 (예: 홍길동 -> 홍*동)
     function maskNickname(nickname) {
         if (!nickname) return "비회원";
         if (nickname.length <= 2) return nickname.charAt(0) + '*';
         return nickname.charAt(0) + '*'.repeat(nickname.length - 2) + nickname.slice(-1);
     }
 
-    // 날짜 포맷팅
+    // 유틸리티 함수: 날짜 포맷팅
     function formatDate(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString('ko-KR', {
@@ -49,285 +36,226 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ----------------------------------------------------
-    // 모달 제어 함수 (로직 수정)
-    // ----------------------------------------------------
-
-    function openModal() {
-        const isReview = currentBoardType === 'review';
-
-        // 1. 후기 게시판 (회원 전용) 로직
-        if (isReview && !isUserLoggedIn) {
-            alert("고객 후기는 회원만 작성할 수 있습니다. 먼저 로그인하거나 회원가입을 해주세요. (회원가입/로그인 기능 구현 예정)");
-            return;
-        }
-
-        // 2. 문의 게시판 (회원/비회원 모두 가능) 로직
-        if (currentBoardType === 'inquiry') {
-            modalTitle.textContent = '1:1 문의 작성';
-            postTypeInput.value = 0; // 문의: 0
-
-            // 로그인 상태가 아닐 경우에만 비회원 필드 표시
-            if (!isUserLoggedIn) {
-                guestFields.classList.remove('hidden');
-                requiredGuestFields.forEach(input => input.setAttribute('required', 'required'));
-            } else {
-                guestFields.classList.add('hidden');
-                requiredGuestFields.forEach(input => input.removeAttribute('required'));
-            }
-        } else { // review (isReview && isUserLoggedIn이 true인 경우만 실행됨)
-            modalTitle.textContent = '고객 후기 작성';
-            postTypeInput.value = 1; // 후기: 1
-            guestFields.classList.add('hidden'); // 후기는 회원 작성 시 비회원 필드 숨김
-            requiredGuestFields.forEach(input => input.removeAttribute('required'));
-        }
-
-        // 모달 열기 애니메이션
-        writeModal.classList.remove('hidden');
-        setTimeout(() => {
-            writeModal.style.opacity = '1';
-            writeModal.querySelector('.max-w-2xl').style.transform = 'translateY(0)';
-            writeModal.querySelector('.max-w-2xl').style.scale = '1';
-        }, 10);
-    }
-
-    function closeModal() {
-        // 모달 닫기 애니메이션
-        writeModal.style.opacity = '0';
-        writeModal.querySelector('.max-w-2xl').style.transform = 'translateY(40px)';
-        writeModal.querySelector('.max-w-2xl').style.scale = '0.95';
-
-        setTimeout(() => {
-            writeModal.classList.add('hidden');
-            postForm.reset(); // 폼 초기화
-        }, 300);
-    }
-
-    // ----------------------------------------------------
-    // 게시글 목록 및 페이징 함수 (이전 코드와 동일)
+    // 게시글 목록 로드
     // ----------------------------------------------------
 
     async function fetchPosts(type = currentBoardType, page = 1) {
-        postListBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-neon-cyan/50 font-tech">데이터 로딩 중...</td></tr>`;
+        postListBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-neon-cyan/50 animate-pulse">게시물을 불러오는 중...</td></tr>';
 
         try {
-            const typeValue = type === 'review' ? 1 : 0; // 'review' -> 1, 'inquiry' -> 0
-            const response = await fetch(`${SERVER_URL}/posts?type=${typeValue}&page=${page}&limit=10`);
+            const response = await fetch(`${SERVER_URL}/posts?type=${type}&page=${page}`);
             if (!response.ok) {
-                throw new Error('API 응답 실패');
+                throw new Error('게시물 로드에 실패했습니다.');
             }
-            const data = await response.json();
 
-            renderPosts(data.posts);
-            renderPagination(data.totalPages, data.currentPage);
-            updatePostCount(data.totalPosts);
+            const result = await response.json();
+
+            // 총 개수 정보 업데이트
+            postCountInfo.textContent = `총 ${result.totalCount}건`;
+
+            renderPosts(result.posts);
+            renderPagination(result.totalPages, page);
 
         } catch (error) {
-            console.error('게시글 불러오기 오류:', error);
-            postListBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-neon-pink font-bold">게시글 로딩에 실패했습니다. (${error.message})</td></tr>`;
+            console.error('게시물 로드 오류:', error);
+            postListBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-red-500">게시물 로드 중 오류가 발생했습니다. 서버 상태를 확인하세요.</td></tr>';
         }
     }
 
     function renderPosts(posts) {
-        postListBody.innerHTML = '';
+        postListBody.innerHTML = ''; // 기존 목록 초기화
+
         if (posts.length === 0) {
-            postListBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">등록된 게시글이 없습니다.</td></tr>`;
+            postListBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">아직 등록된 게시물이 없습니다.</td></tr>';
             return;
         }
 
-        posts.forEach((post) => {
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-neon-cyan/10 transition-colors cursor-pointer';
-
-            const commentInfo = (post.comment_count > 0)
-                ? `<span class="text-neon-pink ml-2">(${post.comment_count})</span>`
-                : '';
-
-            const titlePrefix = (currentBoardType === 'inquiry')
-                ? `<span class="text-neon-cyan/70 mr-2">[문의]</span>`
-                : '';
-
-            // 회원 작성 시 author_nickname, 비회원 작성 시 guest_name 사용
-            const author = maskNickname(post.author_nickname || post.guest_name);
-
-            tr.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-tech">${post.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-base text-white">
-                    ${titlePrefix}${post.title} ${commentInfo}
+        posts.forEach(post => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-neon-cyan/10 cursor-pointer transition-colors';
+            row.innerHTML = `
+                <td class="px-6 py-3 font-tech text-neon-pink text-center w-1/12">${post.id}</td>
+                <td class="px-6 py-3 text-left w-6/12 flex items-center">
+                    <span class="truncate max-w-full">${post.title}</span>
+                    ${post.has_comment ? '<span class="ml-2 text-xs font-tech text-neon-cyan border border-neon-cyan rounded-full px-2 py-0.5">답변 완료</span>' : ''}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-tech text-gray-400">${formatDate(post.created_at)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-tech text-neon-cyan">${post.views}</td>
+                <td class="px-6 py-3 text-center w-2/12">${maskNickname(post.nickname || post.guest_name)}</td>
+                <td class="px-6 py-3 text-center w-2/12">${formatDate(post.created_at)}</td>
+                <td class="px-6 py-3 font-tech text-center w-1/12">${post.views}</td>
             `;
+            // TODO: 게시글 클릭 이벤트 리스너 추가 (상세 보기 모달)
+            // row.addEventListener('click', () => alert(`게시글 ${post.id} 상세 보기`)); 
 
-            tr.addEventListener('click', () => {
-                alert(`[${post.id}번 게시글] ${post.title} 클릭됨! (상세 보기 기능 구현 예정)`);
-            });
-
-            postListBody.appendChild(tr);
+            postListBody.appendChild(row);
         });
     }
 
     function renderPagination(totalPages, currentPage) {
-        const paginationDiv = document.getElementById('pagination');
-        paginationDiv.innerHTML = '';
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = ''; // 기존 페이지네이션 초기화
 
-        const maxButtons = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+        if (totalPages <= 1) return;
 
-        if (endPage - startPage + 1 < maxButtons) {
-            startPage = Math.max(1, endPage - maxButtons + 1);
+        // 페이지 버튼 생성
+        for (let i = 1; i <= totalPages; i++) {
+            const button = document.createElement('button');
+            button.textContent = i;
+            button.className = `px-3 py-1 rounded transition-colors ${i === currentPage ? 'bg-neon-cyan text-black font-bold' : 'text-gray-400 hover:bg-black/50'}`;
+            button.addEventListener('click', () => fetchPosts(currentBoardType, i));
+            paginationContainer.appendChild(button);
         }
-
-        if (currentPage > 1) {
-            paginationDiv.appendChild(createPageButton('prev', currentPage - 1));
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            paginationDiv.appendChild(createPageButton(i, i, i === currentPage));
-        }
-
-        if (currentPage < totalPages) {
-            paginationDiv.appendChild(createPageButton('next', currentPage + 1));
-        }
-    }
-
-    function createPageButton(text, pageNum, isActive = false) {
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.className = `px-3 py-1 rounded transition-all duration-200 ${isActive
-            ? 'bg-neon-cyan text-dark font-bold shadow-neon-cyan/50'
-            : 'bg-dark/50 text-gray-400 hover:bg-neon-cyan/20 hover:text-neon-cyan border border-neon-cyan/30'
-            }`;
-
-        if (text === 'prev' || text === 'next') {
-            button.innerHTML = text === 'prev' ? '<i class="fas fa-angle-left"></i>' : '<i class="fas fa-angle-right"></i>';
-        }
-
-        button.addEventListener('click', () => fetchPosts(currentBoardType, pageNum));
-        return button;
-    }
-
-    function updatePostCount(total) {
-        postCountInfo.textContent = `총 ${total}개의 게시물`;
-    }
-
-    function handleTabClick(newType, clickedButton) {
-        if (newType === currentBoardType) {
-            return;
-        }
-
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active-tab'));
-        clickedButton.classList.add('active-tab');
-
-        tabInquiry.classList.remove('text-neon-pink', 'border-neon-pink', 'text-gray-500', 'border-neon-cyan');
-        tabReview.classList.remove('text-neon-pink', 'border-neon-pink', 'text-gray-500', 'border-neon-cyan');
-
-        if (newType === 'inquiry') {
-            tabInquiry.classList.add('text-neon-cyan', 'border-neon-cyan');
-            tabReview.classList.add('text-gray-500', 'border-neon-pink');
-        } else {
-            tabReview.classList.add('text-neon-pink', 'border-neon-pink');
-            tabInquiry.classList.add('text-gray-500', 'border-neon-cyan');
-        }
-
-        currentBoardType = newType;
-        fetchPosts(newType);
     }
 
     // ----------------------------------------------------
-    // 게시글 작성 API 호출 함수 (수정)
+    // 쓰기 모달 제어
     // ----------------------------------------------------
 
-    async function createPost(postData) {
-        const submitButton = document.getElementById('submit-post-button');
-        submitButton.disabled = true;
-        const originalText = submitButton.innerHTML;
-        submitButton.innerHTML = '<i class="fas fa-sync fa-spin mr-2"></i> 전송 중...';
-
-        // 💡 로그인 상태일 경우 guest_name, guest_password 제거
+    function openWriteModal() {
+        // 비회원 입력 필드 표시/숨김 설정
         if (isUserLoggedIn) {
-            delete postData.guest_name;
-            delete postData.guest_password;
-            // TODO: 실제 토큰을 사용하여 postData.user_id를 서버에 전달해야 합니다.
+            guestInputGroup.classList.add('hidden');
         } else {
-            // 비회원 작성 시, 닉네임과 비밀번호가 없으면 서버에서 거부될 수 있으므로 클라이언트에서 한번 더 체크
-            if (postData.type === 0 && (!postData.guest_name || !postData.guest_password)) {
-                alert("비회원 문의 작성 시 닉네임과 비밀번호는 필수입니다.");
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+            guestInputGroup.classList.remove('hidden');
+        }
+
+        // 탭 상태를 모달 내에 반영
+        writePostType.value = currentBoardType;
+
+        writeModal.classList.remove('hidden');
+        setTimeout(() => {
+            writeModal.style.opacity = '1';
+            writeModal.querySelector('.max-w-xl').style.transform = 'translateY(0)';
+            writeModal.querySelector('.max-w-xl').style.scale = '1';
+        }, 10);
+    }
+
+    function closeWriteModal() {
+        writeModal.style.opacity = '0';
+        writeModal.querySelector('.max-w-xl').style.transform = 'translateY(40px)';
+        writeModal.querySelector('.max-w-xl').style.scale = '0.95';
+
+        setTimeout(() => {
+            writeModal.classList.add('hidden');
+            writeForm.reset();
+        }, 300);
+    }
+
+    async function handlePostSubmit(e) {
+        e.preventDefault();
+        const button = document.getElementById('submit-post-button');
+        button.disabled = true;
+        button.textContent = '등록 중...';
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        // 비회원일 경우, 닉네임과 비밀번호 유효성 검사
+        if (!isUserLoggedIn) {
+            if (!data.guest_name || !data.guest_password) {
+                alert('비회원 작성 시 이름과 비밀번호를 모두 입력해야 합니다.');
+                button.disabled = false;
+                button.textContent = '작성 완료';
                 return;
             }
         }
+
+        // 인증 토큰 가져오기 (로그인 상태일 경우)
+        const authToken = localStorage.getItem('authToken');
+
+        // POST 요청 본문 구성 (user_id는 백엔드에서 토큰으로 추출하거나 null로 처리됨)
+        const bodyData = {
+            title: data.title,
+            content: data.content,
+            type: data.type === 'inquiry' ? 0 : 1, // 0: 문의, 1: 후기
+        };
+
+        if (!isUserLoggedIn) {
+            bodyData.guest_name = data.guest_name;
+            bodyData.guest_password = data.guest_password; // 평문 비밀번호 전송 (백엔드에서 암호화 처리)
+        }
+
 
         try {
             const response = await fetch(`${SERVER_URL}/posts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // TODO: 회원 작성 시 'Authorization' 헤더에 토큰 추가 필요
+                    // 로그인 상태일 경우 토큰 추가
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                 },
-                body: JSON.stringify(postData)
+                body: JSON.stringify(bodyData)
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.error || '게시글 작성에 실패했습니다.');
+                throw new Error(result.error || '게시글 등록에 실패했습니다.');
             }
 
-            alert("게시글이 성공적으로 등록되었습니다!");
-            closeModal();
-            fetchPosts(currentBoardType, 1); // 첫 페이지로 이동하여 새로고침
+            alert('게시글이 성공적으로 등록되었습니다.');
+            closeWriteModal();
+            fetchPosts(currentBoardType); // 목록 새로고침
 
         } catch (error) {
-            console.error('게시글 작성 오류:', error);
-            alert(`오류: ${error.message}`);
+            console.error('게시글 등록 오류:', error);
+            alert(`게시글 등록 오류: ${error.message}`);
         } finally {
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
+            button.disabled = false;
+            button.textContent = '작성 완료';
         }
     }
 
 
     // ----------------------------------------------------
-    // 이벤트 리스너
+    // 초기화 및 이벤트 리스너
     // ----------------------------------------------------
+
+    // 탭 전환 핸들러
+    function handleTabClick(newType, clickedButton) {
+        if (newType === currentBoardType) {
+            return;
+        }
+
+        // 버튼 스타일 업데이트
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active-tab'));
+        clickedButton.classList.add('active-tab');
+
+        // 문의 탭 (cyan) / 후기 탭 (pink) 색상으로 border/text 변경
+        tabInquiry.classList.remove('text-neon-pink', 'border-neon-pink', 'text-gray-500', 'border-neon-cyan');
+        tabReview.classList.remove('text-neon-cyan', 'border-neon-cyan', 'text-gray-500', 'border-neon-pink');
+
+        if (newType === 'inquiry') {
+            tabInquiry.classList.add('text-neon-cyan', 'border-neon-cyan');
+            tabReview.classList.add('text-gray-500', 'border-neon-pink'); // 비활성 탭은 다른 쪽 색상으로 보더 유지
+        } else {
+            tabReview.classList.add('text-neon-pink', 'border-neon-pink');
+            tabInquiry.classList.add('text-gray-500', 'border-neon-cyan'); // 비활성 탭은 다른 쪽 색상으로 보더 유지
+        }
+
+        currentBoardType = newType;
+        fetchPosts(newType);
+    }
 
     // 초기 탭 설정 및 이벤트 리스너
     tabInquiry.addEventListener('click', () => handleTabClick('inquiry', tabInquiry));
     tabReview.addEventListener('click', () => handleTabClick('review', tabReview));
 
-    // 버튼 초기 스타일 설정 (inquiry가 기본이므로 cyan)
-    tabInquiry.classList.add('text-neon-cyan', 'border-neon-cyan');
+    // 버튼 초기 스타일 설정 및 게시물 로드
+    // 최초에는 inquiry가 활성화된 상태로 시작
+    tabInquiry.classList.add('active-tab', 'text-neon-cyan', 'border-neon-cyan');
     tabReview.classList.add('text-gray-500', 'border-neon-pink');
+    fetchPosts(currentBoardType);
 
-    // 게시글 작성 버튼 이벤트
-    writePostButton.addEventListener('click', openModal);
 
-    // 모달 닫기 버튼 및 배경 클릭 이벤트
-    closeModalButton.addEventListener('click', closeModal);
+    // 쓰기 버튼 및 모달 이벤트 리스너
+    writePostButton.addEventListener('click', openWriteModal);
+    closeWriteModalButton.addEventListener('click', closeWriteModal);
     writeModal.addEventListener('click', (e) => {
         if (e.target.id === 'write-modal') {
-            closeModal();
+            closeWriteModal();
         }
     });
 
-    // 폼 제출 이벤트
-    postForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const formData = new FormData(e.target);
-        const postData = Object.fromEntries(formData.entries());
-
-        // type을 정수로 변환
-        postData.type = parseInt(postData.type);
-
-        // 서버로 데이터 전송
-        createPost(postData);
-    });
-
-
-    // 페이지 로드 시 문의 게시판을 기본으로 불러옴
-    fetchPosts(currentBoardType);
+    // 게시글 작성 폼 제출
+    writeForm.addEventListener('submit', handlePostSubmit);
 });
