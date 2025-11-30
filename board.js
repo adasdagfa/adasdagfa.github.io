@@ -1,9 +1,8 @@
-﻿// board.js
+// board.js
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ⭐ 중요! index.js와 동일한 서버 주소 사용 ⭐
-    // ✅ 서버 주소 변경 (NAS 기본 포트 5000번으로 통신)
+    // ⭐ 중요! 서버 주소 변경 (NAS 기본 포트 5000번으로 통신) ⭐
     const SERVER_URL = 'http://yellowneko.iptime.org:5000/api';
     const postListBody = document.getElementById('post-list-body');
     const tabInquiry = document.getElementById('tab-inquiry');
@@ -30,68 +29,126 @@ document.addEventListener("DOMContentLoaded", function () {
         }).replace(/\./g, '-').slice(0, -1);
     }
 
-    // 게시글 목록을 불러와서 테이블에 렌더링
-    async function fetchPosts(type) {
-        postListBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-neon-cyan">데이터를 불러오는 중...</td></tr>';
+    // 게시글 목록을 불러오는 핵심 함수
+    async function fetchPosts(type = currentBoardType, page = 1) {
+        postListBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-neon-cyan/50 font-tech">데이터 로딩 중...</td></tr>`;
 
         try {
-            const response = await fetch(`${SERVER_URL}/posts/${type}`);
+            const response = await fetch(`${SERVER_URL}/posts?type=${type}&page=${page}&limit=10`);
             if (!response.ok) {
-                throw new Error('게시글 로드 실패');
+                throw new Error('API 응답 실패');
             }
-            const posts = await response.json();
+            const data = await response.json();
 
-            // 총 게시물 수 업데이트
-            postCountInfo.textContent = `총 ${posts.length}건의 게시물이 있습니다.`;
-
-            if (posts.length === 0) {
-                postListBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">게시물이 없습니다.</td></tr>';
-                return;
-            }
-
-            postListBody.innerHTML = ''; // 기존 목록 제거
-
-            posts.forEach((post, index) => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-neon-cyan/10 cursor-pointer';
-
-                // 작성자 결정 (회원 닉네임 또는 비회원 이름)
-                const writer = post.nickname
-                    ? maskNickname(post.nickname)
-                    : maskNickname(post.guest_name) || '비회원';
-
-                row.innerHTML = `
-                    <td class="px-6 py-3 whitespace-nowrap">${posts.length - index}</td>
-                    <td class="px-6 py-3 whitespace-nowrap font-bold text-white">
-                        <span class="${post.type === 'inquiry' ? 'text-neon-cyan' : 'text-neon-pink'}">[${post.type === 'inquiry' ? '문의' : '후기'}]</span>
-                        ${post.title}
-                    </td>
-                    <td class="px-6 py-3 whitespace-nowrap">${writer}</td>
-                    <td class="px-6 py-3 whitespace-nowrap">${formatDate(post.created_at)}</td>
-                    <td class="px-6 py-3 whitespace-nowrap">${post.views}</td>
-                `;
-                // ⭐ 추후: 클릭 시 상세 페이지로 이동하는 이벤트 리스너 추가 예정 ⭐
-                row.addEventListener('click', () => {
-                    alert(`[${post.title}] 게시글을 클릭했습니다. 상세 페이지는 다음 단계에서 구현됩니다.`);
-                    // window.location.href = `post_detail.html?id=${post.id}`;
-                });
-
-                postListBody.appendChild(row);
-            });
+            renderPosts(data.posts);
+            renderPagination(data.totalPages, data.currentPage);
+            updatePostCount(data.totalPosts);
 
         } catch (error) {
-            console.error("Fetch posts error:", error);
-            postListBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-red-500">데이터 로드 중 오류가 발생했습니다. 서버를 확인해주세요.</td></tr>';
+            console.error('게시글 불러오기 오류:', error);
+            postListBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-neon-pink font-bold">게시글 로딩에 실패했습니다. (${error.message})</td></tr>`;
         }
     }
 
-    // 탭 전환 핸들러
-    function handleTabClick(newType, clickedButton) {
-        if (currentBoardType === newType) return; // 같은 탭 클릭 시 무시
+    // 게시글 목록을 HTML로 렌더링
+    function renderPosts(posts) {
+        postListBody.innerHTML = ''; // 기존 목록 초기화
+        if (posts.length === 0) {
+            postListBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">등록된 게시글이 없습니다.</td></tr>`;
+            return;
+        }
 
-        // Review 탭 클릭 시 회원 로그인 확인
-        if (newType === 'review' && !localStorage.getItem('token')) {
-            alert("후기는 회원 전용입니다. 로그인 후 이용해주세요.");
+        posts.forEach((post, index) => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-neon-cyan/10 transition-colors cursor-pointer';
+
+            // 댓글 수 표시 (문의는 비공개, 후기는 공개)
+            const commentInfo = (currentBoardType === 'review' && post.comment_count > 0)
+                ? `<span class="text-neon-pink ml-2">(${post.comment_count})</span>`
+                : '';
+
+            // 문의 게시글은 제목 앞에 [문의] 태그 추가
+            const titlePrefix = (currentBoardType === 'inquiry')
+                ? `<span class="text-neon-cyan/70 mr-2">[문의]</span>`
+                : '';
+
+            // 작성자 닉네임 마스킹
+            const author = maskNickname(post.author_nickname || post.guest_name);
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-tech">${post.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-base text-white">
+                    ${titlePrefix}${post.title} ${commentInfo}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${author}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-tech text-gray-400">${formatDate(post.created_at)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-tech text-neon-cyan">${post.views}</td>
+            `;
+
+            // 나중에 post.id를 이용하여 상세 보기 모달을 열도록 이벤트 리스너 추가 가능
+            tr.addEventListener('click', () => {
+                alert(`[${post.id}번 게시글] ${post.title} 클릭됨! (상세 보기 기능 구현 예정)`);
+            });
+
+            postListBody.appendChild(tr);
+        });
+    }
+
+    // 페이지네이션 버튼 렌더링
+    function renderPagination(totalPages, currentPage) {
+        const paginationDiv = document.getElementById('pagination');
+        paginationDiv.innerHTML = '';
+
+        const maxButtons = 5; // 화면에 표시할 최대 페이지 버튼 수
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+        // 끝 페이지가 5개가 안될 경우 시작 페이지를 조정
+        if (endPage - startPage + 1 < maxButtons) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        // 1. 이전 페이지 버튼
+        if (currentPage > 1) {
+            paginationDiv.appendChild(createPageButton('prev', currentPage - 1));
+        }
+
+        // 2. 페이지 번호 버튼
+        for (let i = startPage; i <= endPage; i++) {
+            paginationDiv.appendChild(createPageButton(i, i, i === currentPage));
+        }
+
+        // 3. 다음 페이지 버튼
+        if (currentPage < totalPages) {
+            paginationDiv.appendChild(createPageButton('next', currentPage + 1));
+        }
+    }
+
+    // 페이지네이션 버튼 생성 유틸리티
+    function createPageButton(text, pageNum, isActive = false) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = `px-3 py-1 rounded transition-all duration-200 ${isActive
+                ? 'bg-neon-cyan text-dark font-bold shadow-neon-cyan/50'
+                : 'bg-dark/50 text-gray-400 hover:bg-neon-cyan/20 hover:text-neon-cyan border border-neon-cyan/30'
+            }`;
+
+        if (text === 'prev' || text === 'next') {
+            button.innerHTML = text === 'prev' ? '<i class="fas fa-angle-left"></i>' : '<i class="fas fa-angle-right"></i>';
+        }
+
+        button.addEventListener('click', () => fetchPosts(currentBoardType, pageNum));
+        return button;
+    }
+
+    // 총 게시물 수 업데이트
+    function updatePostCount(total) {
+        postCountInfo.textContent = `총 ${total}개의 게시물`;
+    }
+
+    // 탭 클릭 핸들러
+    function handleTabClick(newType, clickedButton) {
+        if (newType === currentBoardType) {
             return;
         }
 
@@ -123,12 +180,11 @@ document.addEventListener("DOMContentLoaded", function () {
     tabInquiry.classList.add('text-neon-cyan', 'border-neon-cyan');
     tabReview.classList.add('text-gray-500', 'border-neon-pink');
 
-    // 글쓰기 버튼 이벤트 (추후 모달 창으로 교체)
+    // 게시글 작성 버튼 이벤트 (구현 예정)
     writePostButton.addEventListener('click', () => {
-        // ⭐ 추후: 글쓰기 모달을 띄우는 함수로 대체 예정 ⭐
-        alert("글쓰기 기능은 다음 단계에서 구현됩니다.");
+        alert("게시글 작성 모달/페이지 구현 예정입니다.");
     });
 
-    // 페이지 로드 시 초기 게시판 불러오기
+    // 페이지 로드 시 문의 게시판을 기본으로 불러옴
     fetchPosts(currentBoardType);
 });

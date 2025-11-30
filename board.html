@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="static/favicon.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght=300;500;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 
@@ -28,62 +28,54 @@
                             purple: '#9d00ff',
                         },
                         dark: '#050a0e',
-                    }
-                }
-            }
-        }
+                    },
+                },
+            },
+        };
     </script>
 </head>
-<body class="font-kr selection:bg-neon-pink selection:text-white bg-dark min-h-screen">
-
+<body class="bg-dark text-gray-200 font-kr antialiased">
     <div class="scanline"></div>
-    <div class="cyber-grid-bg fixed inset-0 -z-10"></div>
-    <div class="cursor-dot md:block"></div>
-    <div class="cursor-outline md:block"></div>
 
-    <nav class="sticky top-0 w-full z-50 px-4 py-3 md:px-6 md:py-4 flex justify-between items-center border-b border-neon-cyan/20 bg-[#050a0e]/90 backdrop-blur-md">
-        <div class="font-cyber text-xl md:text-2xl font-bold tracking-widest text-white flex items-center cursor-pointer" onclick="window.location.href='index.html'">
-            <span class="text-neon-pink mr-1">&gt;</span>컴퓨터이리온
+    <header class="p-4 bg-black/80 backdrop-blur-md border-b border-neon-cyan/20 shadow-lg font-cyber">
+        <div class="max-w-7xl mx-auto flex justify-between items-center h-12">
+            <a href="index.html" class="text-white text-3xl font-bold tracking-widest hover:text-neon-cyan transition-colors duration-300">
+                컴퓨터이리온
+            </a>
+            <a href="index.html" class="text-gray-300 hover:text-neon-pink transition-colors text-lg font-tech">
+                <i class="fas fa-home mr-2"></i> 홈으로
+            </a>
         </div>
+    </header>
 
-        <div class="hidden md:flex space-x-8 font-tech text-lg tracking-wider">
-            <a href="board.html" class="text-neon-cyan hover:text-neon-pink transition-colors relative group font-bold">문의/후기</a>
-            <a href="#" id="auth-button" class="text-gray-300 hover:text-neon-purple transition-colors relative group">로그인/회원가입</a>
-            <a href="https://blog.naver.com/computer-irion" target="_blank" class="text-gray-300 hover:text-neon-pink transition-colors relative group">블로그</a>
-        </div>
-
-        <a href="https://open.kakao.com/o/stei0S0h" target="_blank" class="hidden md:block font-cyber px-6 py-2 border border-neon-cyan text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_15px_#00f3ff] transition-all duration-300">
-            카카오톡 문의
-        </a>
-    </nav>
-
-    <main class="py-16 px-6 max-w-7xl mx-auto">
-
-        <h1 class="font-cyber text-4xl md:text-5xl font-bold text-white mb-8 text-center">
-            <span class="text-neon-pink">게시판</span> 시스템
+    <main class="max-w-7xl mx-auto px-6 py-12 md:py-20">
+        <h1 class="text-5xl font-cyber text-neon-cyan mb-8 border-b border-neon-cyan/50 pb-2">
+            문의 / 후기 게시판
         </h1>
 
-        <div class="flex justify-center space-x-4 mb-10 font-cyber">
-            <button id="tab-inquiry" class="tab-button active-tab px-6 py-2 border-2 border-neon-cyan text-neon-cyan hover:bg-neon-cyan/20 transition-all">
-                1:1 문의 (비회원 가능)
-            </button>
-            <button id="tab-review" class="tab-button px-6 py-2 border-2 border-neon-pink text-gray-500 hover:text-neon-pink hover:bg-neon-pink/20 transition-all">
-                후기 (회원 전용)
-            </button>
-        </div>
-
-        <div class="flex justify-between items-center mb-8">
-            <div class="text-gray-400 font-tech" id="post-count-info">
-                총 0건의 게시물이 있습니다.
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+            <div class="flex space-x-4 font-tech text-lg">
+                <button id="tab-inquiry" class="tab-button border-b-2 border-transparent pb-1 hover:text-neon-cyan transition-colors active-tab">
+                    1:1 문의
+                </button>
+                <button id="tab-review" class="tab-button border-b-2 border-transparent pb-1 hover:text-neon-pink transition-colors text-gray-500">
+                    고객 후기
+                </button>
             </div>
-            <button id="write-post-button" class="font-cyber px-6 py-3 bg-neon-purple text-white hover:bg-neon-purple/80 transition-all shadow-[0_0_15px_rgba(157,0,255,0.5)]">
-                글쓰기 <i class="fas fa-pen ml-2"></i>
-            </button>
+
+            <div class="flex items-center space-x-4">
+                <span id="post-count-info" class="text-sm text-gray-400 font-tech">
+                    총 0개의 게시물
+                </span>
+                <button id="write-post-button" class="py-2 px-4 text-base font-bold bg-neon-cyan text-dark hover:bg-neon-pink transition-all duration-300 rounded shadow-neon-cyan/50">
+                    <i class="fas fa-pen mr-2"></i> 게시글 작성
+                </button>
+            </div>
         </div>
 
-        <div class="overflow-x-auto cyber-card p-4 border-2 border-neon-cyan/30 shadow-[0_0_20px_rgba(0,243,255,0.1)]">
-            <table class="min-w-full divide-y divide-neon-cyan/50 text-white font-tech">
-                <thead class="bg-black/50">
+        <div class="bg-dark/90 border border-neon-cyan/30 rounded-lg overflow-hidden shadow-xl">
+            <table class="min-w-full divide-y divide-neon-cyan/30">
+                <thead class="bg-black/80 font-tech tracking-wider">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-neon-cyan uppercase tracking-wider w-1/12">No.</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-neon-cyan uppercase tracking-wider w-6/12">제목</th>
@@ -105,11 +97,19 @@
 
     <footer class="py-12 px-6 text-center relative overflow-hidden bg-black/80 mt-16">
         <div class="max-w-7xl mx-auto font-tech items-center border-t border-neon-cyan/20 pt-8">
+            <div class="mb-4">
+                <span class="font-cyber text-2xl font-bold text-white tracking-widest">컴퓨터이리온</span>
+            </div>
+            <p class="text-gray-500 text-sm mb-2">대표: 손광국 | 사업자등록번호: 494-54-00682</p>
             <p class="text-gray-500 text-sm mb-6">Copyright © 2025 컴퓨터 이리온. All rights reserved.</p>
+
+            <div class="inline-block border border-neon-purple/50 px-4 py-2 rounded bg-neon-purple/10">
+                <span class="text-gray-400 text-sm mr-2">총 방문자 수:</span>
+                <span id="visitor-count-number" class="text-neon-cyan font-bold font-cyber text-lg">0</span>
+            </div>
         </div>
     </footer>
 
-    <script src="script.js"></script>
     <script src="board.js"></script>
 </body>
 </html>

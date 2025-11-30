@@ -13,260 +13,266 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=7xmmesxfh1"></script>
     <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=7xmmesxfh1"></script>
 
-    <script>
+    <style>
         tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        cyber: ['Orbitron', 'sans-serif'],
-                        tech: ['Rajdhani', 'sans-serif'],
-                        kr: ['Noto Sans KR', 'sans-serif'],
-                    },
-                    colors: {
-                        neon: {
-                            cyan: '#00f3ff',
-                            pink: '#ff00ff',
-                            purple: '#9d00ff',
-                        },
-                        dark: '#050a0e',
-                    }
-                }
-            }
+            darkMode: 'class', theme:
+
+        {
+            extend:
+
+        {
+            fontFamily:
+
+        {
+            cyber: ['Orbitron', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'], kr: ['Noto Sans KR', 'sans-serif'],
         }
-    </script>
+
+        ,
+        colors: {
+            neon:
+
+        {
+            cyan: '#00f3ff', pink: '#ff00ff', purple: '#9d00ff',
+        }
+
+        ,
+        dark: '#050a0e',
+        }
+        ,
+        }
+        ,
+        }
+        ,
+        }
+        ;
+    </style>
 </head>
-<body class="font-kr selection:bg-neon-pink selection:text-white bg-dark">
+<body class="bg-dark text-gray-200 font-kr antialiased">
+    <div class="cursor-dot fixed w-2 h-2 rounded-full bg-neon-pink z-[9999] pointer-events-none transition-transform duration-100 ease-out mix-blend-difference"></div>
+    <div class="cursor-outline fixed w-8 h-8 rounded-full border border-neon-cyan/50 z-[9999] pointer-events-none transition-transform duration-150 ease-out mix-blend-difference"></div>
 
-    <div id="loading-bar"></div>
     <div class="scanline"></div>
-    <div class="cyber-grid-bg fixed inset-0 -z-10"></div>
-    <div class="cursor-dot md:block"></div>
-    <div class="cursor-outline md:block"></div>
 
-    <div id="image-modal" class="fixed inset-0 bg-black/80 z-[10000] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300 opacity-0">
-        <div class="relative max-w-5xl max-h-[95vh] w-full flex items-center justify-center">
-            <img id="modal-img" src="" alt="확대 이미지" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,243,255,0.7)] transition-transform duration-300 scale-95">
-            <button id="close-modal" class="modal-close-btn absolute top-4 right-4 text-white text-4xl hover:text-neon-pink transition-colors">&times;</button>
-        </div>
-    </div>
+    <header class="fixed top-0 left-0 w-full z-50 p-4 bg-black/80 backdrop-blur-md border-b border-neon-cyan/20 shadow-lg font-cyber">
+        <div class="max-w-7xl mx-auto flex justify-between items-center h-12">
+            <a href="#" id="logo-link" class="text-white text-3xl font-bold tracking-widest hover:text-neon-cyan transition-colors duration-300 transform hover:scale-105">
+                컴퓨터이리온
+            </a>
 
-    <div id="auth-modal" class="fixed inset-0 bg-black/90 z-[10002] hidden flex items-center justify-center p-4 backdrop-blur-md transition-opacity duration-300 opacity-0">
-        <div class="cyber-card w-full max-w-md p-8 border-2 border-neon-cyan/50 shadow-[0_0_20px_rgba(0,243,255,0.3)] relative">
-            <button id="close-auth-modal" class="absolute top-3 right-5 text-white text-3xl hover:text-neon-pink transition-colors">&times;</button>
-            <h3 id="modal-title" class="font-cyber text-2xl text-neon-cyan mb-6 text-center">로그인</h3>
+            <nav class="hidden md:flex space-x-8 text-lg font-tech tracking-wider">
+                <a href="#about" class="text-gray-300 hover:text-neon-cyan transition-colors">소개</a>
+                <a href="#services" class="text-gray-300 hover:text-neon-cyan transition-colors">서비스</a>
+                <a href="#gallery" class="text-gray-300 hover:text-neon-cyan transition-colors">갤러리</a>
+                <a href="#location" class="text-gray-300 hover:text-neon-cyan transition-colors">위치</a>
+                <a href="board.html" class="text-neon-pink hover:text-neon-cyan transition-colors border-b border-transparent hover:border-neon-pink pb-1">문의 / 후기</a>
 
-            <form id="auth-form" class="space-y-4">
-                <input type="text" id="auth-username" placeholder="아이디" class="w-full bg-dark border-b border-neon-cyan/50 p-3 text-white focus:outline-none focus:border-neon-cyan">
-                <input type="password" id="auth-password" placeholder="비밀번호" class="w-full bg-dark border-b border-neon-cyan/50 p-3 text-white focus:outline-none focus:border-neon-cyan">
-
-                <input type="text" id="auth-nickname" placeholder="닉네임" class="w-full bg-dark border-b border-neon-pink/50 p-3 text-white focus:outline-none focus:border-neon-pink hidden">
-
-                <button type="submit" id="auth-submit" class="w-full font-cyber mt-6 px-4 py-3 bg-neon-pink text-black hover:bg-white transition-all duration-300 shadow-[0_0_15px_rgba(255,0,255,0.5)]">
+                <button id="auth-button" class="text-neon-cyan border border-neon-cyan/50 px-3 py-1 rounded hover:bg-neon-cyan hover:text-dark transition-all duration-300">
                     로그인
                 </button>
-            </form>
+            </nav>
 
-            <div class="mt-4 text-center">
-                <button id="toggle-signup" class="text-sm text-gray-400 hover:text-neon-cyan transition-colors">
-                    계정이 없으신가요? → 회원가입
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="fixed w-full z-50 px-4 py-3 md:px-6 md:py-4 flex justify-between items-center border-b border-neon-cyan/20 bg-[#050a0e]/90 backdrop-blur-md">
-        <div class="font-cyber text-xl md:text-2xl font-bold tracking-widest text-white flex items-center cursor-pointer" id="logo-link">
-            <span class="text-neon-pink mr-1">&gt;</span>컴퓨터이리온
-        </div>
-
-        <div class="hidden md:flex space-x-8 font-tech text-lg tracking-wider">
-            <a href="board.html" class="text-neon-pink hover:text-neon-cyan transition-colors relative group font-bold">문의/후기</a>
-            <a href="#" id="auth-button" class="text-gray-300 hover:text-neon-purple transition-colors relative group">로그인/회원가입</a>
-            <a href="https://blog.naver.com/computer-irion" target="_blank" class="text-gray-300 hover:text-neon-pink transition-colors relative group">블로그</a>
-        </div>
-
-        <a href="https://open.kakao.com/o/stei0S0h" target="_blank" class="hidden md:block font-cyber px-6 py-2 border border-neon-cyan text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_15px_#00f3ff] transition-all duration-300">
-            카카오톡 문의
-        </a>
-    </nav>
-
-    <header id="home" class="relative min-h-screen flex flex-col justify-center items-center px-6 pt-20 text-center overflow-hidden">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-purple/20 rounded-full blur-[120px] -z-10 animate-pulse"></div>
-
-        <div class="max-w-4xl mx-auto relative z-10" data-aos="zoom-in">
-            <div class="font-cyber text-neon-cyan mb-4 tracking-[0.3em] text-sm">시스템 온라인 // 전북 부안군</div>
-            <h1 class="font-cyber text-5xl md:text-7xl font-black mb-6 leading-tight">
-                <span class="block text-white glitch-text">컴퓨터</span><span class="block text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan via-white to-neon-pink">이리온</span>
-            </h1>
-            <p class="font-kr text-base md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl mx-auto border-l-2 border-neon-pink pl-6 text-left">
-                "컴퓨터 문제, <span class="text-neon-cyan">이리온</span>으로 오세요!"<br>
-                부팅 불량부터 조립 PC까지, 압도적인 기술력으로 해결합니다.
-            </p>
-
-            <div class="flex flex-col sm:flex-row gap-4 justify-center font-tech font-bold">
-                <a href="https://open.kakao.com/o/stei0S0h" target="_blank" class="px-8 py-4 bg-neon-cyan text-black hover:bg-white transition-all skew-x-[-10deg] hover:skew-x-0 shadow-[0_0_20px_rgba(0,243,255,0.4)]">
-                    <span class="inline-block skew-x-[10deg]">카카오톡 문의</span>
-                </a>
-                <a href="tel:010-5942-3532" class="px-8 py-4 border border-neon-pink text-neon-pink hover:bg-neon-pink/20 transition-all skew-x-[-10deg] hover:skew-x-0">
-                    <span class="inline-block skew-x-[10deg]">010-5942-3532</span>
-                </a>
-                <a href="https://blog.naver.com/computer-irion" target="_blank" class="px-8 py-4 border border-neon-purple text-neon-purple hover:bg-neon-purple/20 transition-all skew-x-[-10deg] hover:skew-x-0">
-                    <span class="inline-block skew-x-[10deg]">블로그 바로가기</span>
-                </a>
-            </div>
-        </div>
-
-        <div class="hidden md:block absolute bottom-10 animate-bounce text-neon-cyan">
-            <span>아래로 스크롤</span>
-            <i class="fas fa-chevron-down block mt-2"></i>
+            <button id="mobile-menu-button" class="md:hidden text-neon-cyan text-2xl hover:text-white transition-colors">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </header>
 
-    <section id="services" class="py-24 px-6 relative">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex items-end justify-between mb-16" data-aos="fade-right">
-                <div>
-                    <h2 class="font-cyber text-4xl md:text-5xl font-bold text-white mb-2"><span class="text-neon-cyan">핵심</span> 서비스</h2>
-                    <div class="h-1 w-32 bg-gradient-to-r from-neon-cyan to-neon-pink"></div>
+    <main>
+        <section id="hero" class="relative pt-32 pb-20 md:pt-48 md:pb-32 min-h-screen flex items-center justify-center overflow-hidden cyber-grid-bg">
+            <div class="absolute inset-0 z-0 opacity-10">
+                <div class="w-1/2 h-full bg-neon-cyan blur-[100px] absolute top-0 left-0 animate-pulse"></div>
+                <div class="w-1/2 h-full bg-neon-pink blur-[100px] absolute bottom-0 right-0 animate-pulse delay-500"></div>
+            </div>
+
+            <div class="relative z-10 text-center px-4">
+                <h1 data-aos="fade-up" data-aos-delay="100" class="glitch-text text-5xl md:text-8xl font-cyber font-extrabold text-white mb-4 tracking-wider leading-tight">
+                    COMPUTER IRION
+                </h1>
+                <p data-aos="fade-up" data-aos-delay="300" class="text-lg md:text-3xl font-tech text-neon-cyan mb-8 tracking-wider border-b border-neon-cyan/50 pb-2 inline-block">
+                    미래형 기술로 완성하는 컴퓨터 수리/조립 전문
+                </p>
+                <div data-aos="fade-up" data-aos-delay="500" class="flex justify-center space-x-4">
+                    <a href="#services" class="cyber-card py-3 px-8 text-lg font-bold bg-neon-purple text-white hover:bg-neon-pink transition-all duration-300 shadow-neon-purple hover:shadow-neon-pink">
+                        서비스 보기 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="board.html" class="cyber-card py-3 px-8 text-lg font-bold border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan hover:text-dark transition-all duration-300 shadow-neon-cyan/30">
+                        문의하기 <i class="fas fa-comment-dots ml-2"></i>
+                    </a>
                 </div>
             </div>
+        </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="cyber-card p-8 group border-l-4 border-neon-cyan" data-aos="flip-left" data-aos-delay="100">
-                    <div class="text-5xl text-neon-cyan mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-tools"></i>
+        <section id="about" class="py-20 md:py-32 bg-black/80 border-t border-b border-neon-purple/20">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 data-aos="fade-right" class="section-title text-4xl md:text-5xl font-cyber text-neon-purple mb-16 relative">
+                    <span class="relative z-10">ABOUT US</span>
+                    <span class="absolute left-0 bottom-0 w-1/4 h-1 bg-neon-purple/50"></span>
+                </h2>
+
+                <div class="md:flex md:space-x-12">
+                    <div data-aos="fade-up" data-aos-delay="100" class="md:w-1/2 mb-8 md:mb-0 p-6 cyber-card bg-dark/70 border border-neon-cyan/20">
+                        <h3 class="text-3xl font-tech text-neon-cyan mb-4 tracking-wider">우리의 약속</h3>
+                        <p class="text-gray-400 leading-relaxed mb-4">
+                            컴퓨터이리온은 단순한 수리를 넘어선 **미래형 기술 솔루션**을 제공합니다.
+                            데이터 복구, PC 정비, 네트워크 설치까지, 모든 서비스를 **정직하고 투명**하게 처리합니다.
+                        </p>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li class="flex items-center"><i class="fas fa-check-circle text-neon-cyan mr-3"></i> 100% 정품 부품 사용</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-neon-cyan mr-3"></i> 방문/출장 수리 서비스</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-neon-cyan mr-3"></i> 투명한 견적 시스템</li>
+                        </ul>
                     </div>
-                    <h3 class="font-cyber text-2xl text-white font-bold mb-4">PC 수리</h3>
-                    <p class="text-gray-400 font-kr leading-relaxed">
-                        부팅 불량, 화면 깨짐, 속도 저하, 바이러스 등 모든 하드웨어/소프트웨어 문제를 정확히 진단하고 수리합니다.
-                    </p>
-                </div>
-                <div class="cyber-card p-8 group border-l-4 border-neon-pink" data-aos="flip-left" data-aos-delay="200">
-                    <div class="text-5xl text-neon-pink mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-desktop"></i>
-                    </div>
-                    <h3 class="font-cyber text-2xl text-white font-bold mb-4">맞춤형 조립 PC</h3>
-                    <p class="text-gray-400 font-kr leading-relaxed">
-                        게임용, 사무용 등 예산과 용도에 맞춰 1:1 맞춤형 PC를 제작합니다. 최적의 성능을 보장합니다.
-                    </p>
-                </div>
-                <div class="cyber-card p-8 group border-l-4 border-neon-purple" data-aos="flip-left" data-aos-delay="300">
-                    <div class="text-5xl text-neon-purple mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fab fa-windows"></i>
-                    </div>
-                    <h3 class="font-cyber text-2xl text-white font-bold mb-4">설치 및 OS 세팅</h3>
-                    <p class="text-gray-400 font-kr leading-relaxed">
-                        윈도우 및 각종 필수 유틸리티, 프로그램을 완벽하게 세팅하여 바로 사용하실 수 있도록 돕습니다.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section id="gallery" class="py-20 bg-black/50 border-y border-neon-cyan/20 overflow-hidden">
-        <div class="text-center mb-10">
-            <h2 class="font-cyber text-3xl font-bold text-white"><span class="text-neon-pink">조립</span> 갤러리</h2>
-            <p class="text-gray-400 font-kr text-sm mt-2">마우스를 올리면 스크롤이 멈추고, 이미지를 클릭하면 확대됩니다.</p>
-        </div>
-
-        <div class="carousel-track-container">
-            <div class="carousel-track track-slow">
-                <img src="static/game_1.jpg" alt="조립 PC 이미지 1" class="gallery-image">
-                <img src="static/game_2.jpg" alt="조립 PC 이미지 2" class="gallery-image">
-                <img src="static/game_3.jpg" alt="조립 PC 이미지 3" class="gallery-image">
-                <img src="static/game_4.jpg" alt="조립 PC 이미지 4" class="gallery-image">
-                <img src="static/game_5.jpg" alt="조립 PC 이미지 5" class="gallery-image">
-                <img src="static/game_6.jpg" alt="조립 PC 이미지 6" class="gallery-image">
-                <img src="static/game_7.jpg" alt="조립 PC 이미지 7" class="gallery-image">
-                <img src="static/game_8.jpg" alt="조립 PC 이미지 8" class="gallery-image">
-                <img src="static/game_9.jpg" alt="조립 PC 이미지 9" class="gallery-image">
-                <img src="static/game_10.jpg" alt="조립 PC 이미지 10" class="gallery-image">
-            </div>
-        </div>
-
-        <div class="carousel-track-container mt-4">
-            <div class="carousel-track track-fast">
-                <img src="static/game_11.jpg" alt="조립 PC 이미지 11" class="gallery-image">
-                <img src="static/game_12.jpg" alt="조립 PC 이미지 12" class="gallery-image">
-                <img src="static/game_13.jpg" alt="조립 PC 이미지 13" class="gallery-image">
-                <img src="static/game_14.jpg" alt="조립 PC 이미지 14" class="gallery-image">
-                <img src="static/game_15.jpg" alt="조립 PC 이미지 15" class="gallery-image">
-                <img src="static/game_16.jpg" alt="조립 PC 이미지 16" class="gallery-image">
-                <img src="static/game_17.jpg" alt="조립 PC 이미지 17" class="gallery-image">
-                <img src="static/game_18.jpg" alt="조립 PC 이미지 18" class="gallery-image">
-                <img src="static/game_19.jpg" alt="조립 PC 이미지 19" class="gallery-image">
-                <img src="static/game_20.jpg" alt="조립 PC 이미지 20" class="gallery-image">
-            </div>
-        </div>
-
-        <div class="carousel-track-container mt-4">
-            <div class="carousel-track track-medium">
-                <img src="static/game_21.jpg" alt="조립 PC 이미지 21" class="gallery-image">
-                <img src="static/game_22.jpg" alt="조립 PC 이미지 22" class="gallery-image">
-                <img src="static/game_23.jpg" alt="조립 PC 이미지 23" class="gallery-image">
-                <img src="static/game_24.jpg" alt="조립 PC 이미지 24" class="gallery-image">
-                <img src="static/game_25.jpg" alt="조립 PC 이미지 25" class="gallery-image">
-                <img src="static/game_26.jpg" alt="조립 PC 이미지 26" class="gallery-image">
-                <img src="static/game_27.jpg" alt="조립 PC 이미지 27" class="gallery-image">
-                <img src="static/game_28.jpg" alt="조립 PC 이미지 28" class="gallery-image">
-                <img src="static/game_29.jpg" alt="조립 PC 이미지 29" class="gallery-image">
-                <img src="static/game_30.jpg" alt="조립 PC 이미지 30" class="gallery-image">
-            </div>
-        </div>
-    </section>
-
-    <section id="location" class="py-24 px-6 relative">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div data-aos="fade-right">
-                <h2 class="font-cyber text-4xl font-bold text-white mb-8">기본 <span class="text-neon-pink glitch-text">위치</span></h2>
-                <div class="space-y-6 font-tech text-lg text-gray-300">
-                    <div class="flex items-start">
-                        <i class="fas fa-map-marker-alt text-neon-cyan mt-1 mr-4"></i>
-                        <div>
-                            <strong class="text-white block mb-1">주소</strong>
-                            전북특별자치도 부안군 부안읍 용암로 89
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-phone-alt text-neon-pink mt-1 mr-4"></i>
-                        <div>
-                            <strong class="text-white block mb-1">연락처</strong>
-                            010-5942-3532
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-clock text-neon-purple mt-1 mr-4"></i>
-                        <div>
-                            <strong class="text-white block mb-1">영업 시간</strong>
-                            평일 08:00 - 18:30 <br> 주말 09:00 - 17:30
+                    <div data-aos="fade-up" data-aos-delay="300" class="md:w-1/2 p-6 cyber-card bg-dark/70 border border-neon-pink/20">
+                        <h3 class="text-3xl font-tech text-neon-pink mb-4 tracking-wider">최신 기술력</h3>
+                        <p class="text-gray-400 leading-relaxed mb-4">
+                            최신 진단 장비와 기술력을 바탕으로 어떤 복잡한 문제라도 해결합니다.
+                            특히 게이밍 PC 조립 및 튜닝 분야에서 **부안군 최고의 전문가**로 인정받고 있습니다.
+                        </p>
+                        <div class="flex flex-wrap gap-3 mt-4">
+                            <span class="tag-tech">#데이터복구</span>
+                            <span class="tag-tech">#게이밍PC</span>
+                            <span class="tag-tech">#네트워크설치</span>
+                            <span class="tag-tech">#NAS구축</span>
                         </div>
                     </div>
                 </div>
-                <a href="https://map.naver.com/p/entry/place/1281667971?placePath=/home" target="_blank" class="inline-block mt-8 px-8 py-3 bg-[#03C75A] text-white font-bold rounded hover:brightness-110 transition shadow-lg">
-                    네이버 지도 앱 열기
-                </a>
             </div>
+        </section>
 
-            <div class="relative" data-aos="fade-left">
-                <div class="bg-[#050a0e] border-2 border-neon-cyan p-2 relative shadow-[0_0_30px_rgba(0,243,255,0.2)] rounded-lg">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-neon-cyan animate-pulse z-10"></div>
-                    <div id="map" class="w-full h-[400px] rounded bg-gray-800"></div>
-                    <div class="absolute -bottom-6 right-0 text-xs text-neon-cyan font-cyber">
-                        좌표: 35.7198, 126.7441
+        <section id="services" class="py-20 md:py-32 cyber-grid-bg">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 data-aos="fade-left" class="section-title text-4xl md:text-5xl font-cyber text-neon-cyan mb-16 relative text-right">
+                    <span class="absolute right-0 bottom-0 w-1/4 h-1 bg-neon-cyan/50"></span>
+                    <span class="relative z-10">CORE SERVICES</span>
+                </h2>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div data-aos="zoom-in" data-aos-delay="100" class="service-card p-6 bg-dark/90 border border-neon-cyan/20 hover:border-neon-cyan transition-all duration-300">
+                        <i class="fas fa-tools text-5xl text-neon-cyan mb-4"></i>
+                        <h3 class="text-2xl font-tech text-white mb-2 tracking-wider">PC/노트북 수리</h3>
+                        <p class="text-gray-400 text-sm">OS 문제부터 하드웨어 고장까지, 신속하고 정확한 진단 및 수리를 제공합니다.</p>
+                        <span class="tag-service">출장 가능</span>
+                    </div>
+                    <div data-aos="zoom-in" data-aos-delay="200" class="service-card p-6 bg-dark/90 border border-neon-cyan/20 hover:border-neon-cyan transition-all duration-300">
+                        <i class="fas fa-desktop text-5xl text-neon-cyan mb-4"></i>
+                        <h3 class="text-2xl font-tech text-white mb-2 tracking-wider">커스텀 조립 PC</h3>
+                        <p class="text-gray-400 text-sm">고사양 게이밍, 딥러닝, 워크스테이션 등 맞춤형 PC를 최적의 가격으로 조립합니다.</p>
+                        <span class="tag-service">무료 견적</span>
+                    </div>
+                    <div data-aos="zoom-in" data-aos-delay="300" class="service-card p-6 bg-dark/90 border border-neon-cyan/20 hover:border-neon-cyan transition-all duration-300">
+                        <i class="fas fa-database text-5xl text-neon-cyan mb-4"></i>
+                        <h3 class="text-2xl font-tech text-white mb-2 tracking-wider">데이터 복구/NAS</h3>
+                        <p class="text-gray-400 text-sm">실수로 삭제된 파일 복구 및 안정적인 개인 서버(NAS) 구축을 도와드립니다.</p>
+                        <span class="tag-service">전문 복구 장비</span>
+                    </div>
+                </div>
+
+                <div data-aos="fade-up" data-aos-delay="500" class="mt-16 text-center">
+                    <a href="board.html" class="cyber-card py-3 px-8 text-lg font-bold border border-neon-pink/50 text-neon-pink hover:bg-neon-pink hover:text-dark transition-all duration-300 shadow-neon-pink/30">
+                        견적 및 문의하기 <i class="fas fa-angle-double-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="py-20 md:py-32 bg-black/80 border-t border-b border-neon-purple/20">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 data-aos="fade-right" class="section-title text-4xl md:text-5xl font-cyber text-neon-purple mb-16 relative">
+                    <span class="relative z-10">GALLERY</span>
+                    <span class="absolute left-0 bottom-0 w-1/4 h-1 bg-neon-purple/50"></span>
+                </h2>
+
+                <div class="flex flex-col space-y-8">
+                    <div data-aos="fade-left" data-aos-delay="100" class="carousel-track-container">
+                        <div class="carousel-track track-slow" id="carousel-track-slow">
+                        </div>
+                    </div>
+                    <div data-aos="fade-right" data-aos-delay="300" class="carousel-track-container">
+                        <div class="carousel-track track-medium" id="carousel-track-medium">
+                        </div>
+                    </div>
+                    <div data-aos="fade-left" data-aos-delay="500" class="carousel-track-container">
+                        <div class="carousel-track track-fast" id="carousel-track-fast">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <nav id="side-nav" class="fixed right-0 top-1/2 -translate-y-1/2 mr-6 hidden md:block z-40 font-cyber">
-        <ul class="space-y-4 text-right">
-            <li class="side-nav-item" data-target="home">
-                <a href="#home" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="HOME">홈</a>
+        <section id="location" class="py-20 md:py-32 cyber-grid-bg">
+            <div class="max-w-7xl mx-auto px-6">
+                <h2 data-aos="fade-left" class="section-title text-4xl md:text-5xl font-cyber text-neon-cyan mb-16 relative text-right">
+                    <span class="absolute right-0 bottom-0 w-1/4 h-1 bg-neon-cyan/50"></span>
+                    <span class="relative z-10">LOCATION & CONTACT</span>
+                </h2>
+
+                <div class="grid md:grid-cols-2 gap-12">
+                    <div data-aos="fade-right" data-aos-delay="100" class="p-6 border border-neon-cyan/30 rounded-lg shadow-xl bg-dark/70">
+                        <h3 class="text-3xl font-tech text-neon-pink mb-6 tracking-wider border-b border-neon-pink/50 pb-2">연락처 정보</h3>
+
+                        <div class="space-y-4 text-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-phone-alt text-neon-cyan w-6"></i>
+                                <span class="ml-4">전화: 010-8645-8422</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-neon-cyan w-6"></i>
+                                <span class="ml-4">주소: 전북 부안군 부안읍 봉덕길 31</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="far fa-clock text-neon-cyan w-6"></i>
+                                <span class="ml-4">영업시간: 평일 09:00 - 18:00 (주말/공휴일 휴무)</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <a href="tel:01086458422" class="cyber-card py-2 px-6 text-base font-bold bg-neon-cyan text-dark hover:bg-neon-pink transition-all duration-300 shadow-neon-cyan hover:shadow-neon-pink inline-block mr-4">
+                                전화 걸기 <i class="fas fa-phone ml-2"></i>
+                            </a>
+                            <a href="board.html" class="cyber-card py-2 px-6 text-base font-bold border border-neon-purple/50 text-neon-purple hover:bg-neon-purple/20 transition-all duration-300 inline-block">
+                                온라인 문의 <i class="fas fa-comment ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div data-aos="fade-left" data-aos-delay="300" class="relative">
+                        <div class="absolute inset-0 border-2 border-neon-cyan animate-pulse z-10"></div>
+                        <div id="map" class="w-full h-[400px] rounded bg-gray-800"></div>
+                        <div class="absolute -bottom-6 right-0 text-xs text-neon-cyan font-cyber">
+                            좌표: 35.7198, 126.7441
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav id="mobile-nav" class="fixed top-0 right-0 h-full w-64 bg-black/95 backdrop-blur-md z-[99] transform translate-x-full transition-transform duration-300 p-8 font-cyber border-l border-neon-cyan/50">
+        <button id="close-mobile-menu" class="absolute top-4 right-4 text-3xl text-neon-pink hover:text-white transition-colors">
+            <i class="fas fa-times"></i>
+        </button>
+        <ul class="mt-12 space-y-6 text-xl">
+            <li><a href="#about" class="text-gray-300 hover:text-neon-cyan transition-colors" data-mobile-close>소개</a></li>
+            <li><a href="#services" class="text-gray-300 hover:text-neon-cyan transition-colors" data-mobile-close>서비스</a></li>
+            <li><a href="#gallery" class="text-gray-300 hover:text-neon-cyan transition-colors" data-mobile-close>갤러리</a></li>
+            <li><a href="#location" class="text-gray-300 hover:text-neon-cyan transition-colors" data-mobile-close>위치</a></li>
+            <li><a href="board.html" class="text-neon-pink hover:text-neon-cyan transition-colors" data-mobile-close>문의 / 후기</a></li>
+            <li>
+                <button id="auth-button-mobile" class="w-full text-left text-neon-cyan border border-neon-cyan/50 px-4 py-2 rounded hover:bg-neon-cyan hover:text-dark transition-all duration-300 mt-4">
+                    로그인
+                </button>
+            </li>
+        </ul>
+        <ul id="side-nav" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 space-y-4 text-right md:block">
+            <li class="side-nav-item active" data-target="hero">
+                <a href="#hero" class="text-neon-cyan hover:text-neon-cyan transition-colors text-sm" data-nav-name="TOP">TOP</a>
+            </li>
+            <li class="side-nav-item" data-target="about">
+                <a href="#about" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="ABOUT">소개</a>
             </li>
             <li class="side-nav-item" data-target="services">
                 <a href="#services" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="SERVICES">서비스</a>
@@ -289,11 +295,53 @@
 
             <div class="inline-block border border-neon-purple/50 px-4 py-2 rounded bg-neon-purple/10">
                 <span class="text-gray-400 text-sm mr-2">총 방문자 수:</span>
-                <span id="visitor-count-number" class="text-neon-cyan font-bold font-cyber text-lg">로딩 중...</span>
+                <span id="visitor-count-number" class="text-neon-cyan font-bold font-cyber text-lg">0</span>
             </div>
         </div>
-        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-neon-cyan to-transparent blur-md"></div>
     </footer>
+
+
+    <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-dark/95 border border-neon-cyan/50 p-8 rounded-lg shadow-2xl w-full max-w-md relative font-kr">
+            <button id="close-auth-modal" class="absolute top-4 right-4 text-neon-pink text-2xl hover:text-white transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="auth-title" class="text-3xl font-cyber text-neon-cyan mb-6 text-center">로그인</h2>
+            <form id="auth-form" class="space-y-4">
+                <input type="text" id="auth-username" placeholder="아이디" required class="w-full p-3 bg-dark border border-neon-cyan/30 rounded focus:border-neon-cyan text-white placeholder-gray-500">
+                <input type="password" id="auth-password" placeholder="비밀번호" required class="w-full p-3 bg-dark border border-neon-cyan/30 rounded focus:border-neon-cyan text-white placeholder-gray-500">
+                <input type="text" id="auth-nickname" placeholder="닉네임" class="w-full p-3 bg-dark border border-neon-pink/30 rounded focus:border-neon-pink text-white placeholder-gray-500 hidden">
+
+                <button type="submit" id="auth-submit" class="w-full py-3 mt-4 text-lg font-bold bg-neon-pink text-dark hover:bg-neon-cyan transition-all duration-300 rounded shadow-neon-pink/50">
+                    로그인
+                </button>
+            </form>
+            <div id="auth-status" class="mt-4 text-center text-neon-cyan font-tech"></div>
+            <button id="toggle-signup-button" class="mt-6 w-full text-center text-sm text-gray-500 hover:text-neon-pink transition-colors">
+                계정이 없으신가요? → 회원가입
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function initMap() {
+            var mapOptions = {
+                // 부안군청 근처 좌표: 35.7198, 126.7441
+                center: new naver.maps.LatLng(35.7198, 126.7441),
+                zoom: 16,
+                minZoom: 10
+            };
+
+            var map = new naver.maps.Map('map', mapOptions);
+
+            var marker = new naver.maps.Marker({
+                position: new naver.maps.LatLng(35.7198, 126.7441),
+                map: map,
+                title: '컴퓨터이리온',
+            });
+        }
+        window.addEventListener('load', initMap);
+    </script>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="script.js"></script>
