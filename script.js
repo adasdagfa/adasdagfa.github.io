@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 6. 이미지 확대 모달 (Lightbox) 기능 (이전 요청대로 캡션 제거 유지)
+    // 6. 이미지 확대 모달 (Lightbox) 기능 (기존 코드 유지)
     const modal = document.getElementById("image-modal");
     const modalImg = document.getElementById("modal-img");
     const modalClose = document.querySelector(".modal-close-btn");
@@ -166,10 +166,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ⭐ 7. 방문자 카운터: CounterAPI.dev V2 로직으로 완벽 교체 ⭐
+    // 7. 방문자 카운터: CounterAPI.dev V2 로직 (기존 코드 유지)
     const countElement = document.getElementById('visitor-count-number');
 
-    const YOUR_API_KEY = "ut_v51MEVP3IRZSPHtBOCddgX8Zqk3M3eCqXiW0cxDZ"; // <--- 사용자님의 실제 API Key
+    const YOUR_API_KEY = "ut_v51MEVP3IRZSPHtBOCddgX8Zqk3M3eCqXiW0cxDZ";
     const BASE_ENDPOINT = "https://api.counterapi.dev/v2/s-team-4-1812/컴퓨터-이리온-방문";
     const API_HIT_ENDPOINT = `${BASE_ENDPOINT}/up`;
 
@@ -230,103 +230,106 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ⭐ 9. 사이드 네비게이션 연동 및 스크롤 이벤트 로직 ⭐
+    // ***************************************************************
+    // 9. 사이드 내비게이션 (스크롤 감지 및 부드러운 이동) 로직 추가
+    // ***************************************************************
 
-    const sections = document.querySelectorAll('section, header#home');
-    const sideNavItems = document.querySelectorAll('.side-nav-item');
+    const sideNavItems = document.querySelectorAll('#side-nav .nav-item');
+    // home 섹션을 포함하여 모든 섹션을 가져옵니다.
+    const sections = document.querySelectorAll('header[id], section[id]');
 
-    function updateSideNav() {
-        let currentSection = null;
-
-        const scrollPosition = window.scrollY + 100;
-
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                currentSection = section.id;
-            }
-        });
-
+    // 활성 상태 스타일을 관리하는 함수
+    function activateNavItem(targetId) {
         sideNavItems.forEach(item => {
-            if (item.dataset.target === currentSection) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
+            const dot = item.querySelector('.nav-dot');
+            const text = item.querySelector('.nav-text');
+
+            // 모든 항목의 활성 스타일 제거
+            dot.classList.remove('active-pulse');
+            dot.classList.remove('bg-neon-cyan', 'border-neon-cyan');
+            dot.classList.add('bg-white/20', 'border-white/50');
+            text.classList.remove('text-neon-cyan', 'opacity-100');
+            text.classList.add('text-white', 'opacity-80');
+
+
+            // 현재 활성화된 항목에 스타일 추가
+            if (item.getAttribute('data-target') === targetId) {
+                dot.classList.add('active-pulse');
+                dot.classList.add('bg-neon-cyan', 'border-neon-cyan');
+                dot.classList.remove('bg-white/20', 'border-white/50');
+                text.classList.add('text-neon-cyan', 'opacity-100');
+                text.classList.remove('text-white', 'opacity-80');
             }
         });
     }
 
-    window.addEventListener('scroll', updateSideNav);
-    updateSideNav(); // 페이지 로드 시 초기 위치 반영
+    // 9-1. 부드러운 스크롤 (클릭 시 이동)
+    sideNavItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const targetElement = document.getElementById(targetId);
 
-    // ⭐ 10. 로그인/회원가입 모달 관련 로직 ⭐
-    const authModal = document.getElementById('auth-modal');
-    const authButton = document.getElementById('auth-button');
-    const closeAuthModal = document.getElementById('close-auth-modal');
-    const toggleSignupButton = document.getElementById('toggle-signup');
-    const authForm = document.getElementById('auth-form');
-    const authTitle = document.getElementById('modal-title');
-    const authSubmit = document.getElementById('auth-submit');
-    const authNicknameInput = document.getElementById('auth-nickname');
+            if (targetElement) {
+                // 활성 스타일을 즉시 적용하여 사용자에게 피드백 제공
+                activateNavItem(targetId);
 
-    let isLoginMode = true;
+                // 스크롤 시 헤더 높이를 고려하여 60px 띄웁니다.
+                const offset = targetId === 'home' ? 0 : 60;
 
-    // ✅ NAS 서버 주소 최종 반영 (yellowneko.iptime.org, Node.js 포트 5000 사용)
-    const SERVER_URL = 'http://yellowneko.iptime.org:5000/api';
+                window.scrollTo({
+                    top: targetElement.offsetTop - offset,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
 
-    function openAuthModal() {
-        authModal.classList.remove('hidden');
-        setTimeout(() => { authModal.style.opacity = '1'; }, 10);
 
-        // 입력값 초기화
-        document.getElementById('auth-username').value = '';
-        document.getElementById('auth-password').value = '';
-        document.getElementById('auth-nickname').value = '';
+    // 9-2. 스크롤 감지 및 항목 활성화 (Intersection Observer 사용)
+    const observerOptions = {
+        root: null, // 뷰포트를 기준으로 감지
+        // 뷰포트의 상단 100px 지점부터 뷰포트 하단 30% 지점 사이를 기준으로 감지
+        rootMargin: '-100px 0px -30% 0px',
+        threshold: 0 // 섹션이 rootMargin 범위에 조금이라도 들어오면 감지
+    };
 
-        // 현재 로그인/로그아웃 상태에 따라 버튼 텍스트 변경
-        const token = localStorage.getItem('token');
-        const nickname = localStorage.getItem('nickname');
-        if (token) {
-            // 이미 로그인 되어 있다면 로그아웃 버튼 표시
-            authTitle.textContent = `${nickname}님 접속 중`;
-            authSubmit.textContent = '로그아웃';
-            authNicknameInput.classList.add('hidden');
-            toggleSignupButton.classList.add('hidden');
-            document.getElementById('auth-password').classList.add('hidden');
-            document.getElementById('auth-username').classList.add('hidden');
-        } else {
-            // 로그인 상태가 아니라면 로그인 폼 표시
-            isLoginMode = true; // 강제 로그인 모드 설정
-            toggleAuthMode();
-            toggleSignupButton.classList.remove('hidden');
-            document.getElementById('auth-password').classList.remove('hidden');
-            document.getElementById('auth-username').classList.remove('hidden');
+    let activeSectionId = null;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 현재 진입한 섹션의 ID를 활성 ID로 설정
+                activeSectionId = entry.target.id;
+            }
+        });
+
+        // 가장 최근에 활성화된 섹션을 기반으로 메뉴 항목 업데이트
+        if (activeSectionId) {
+            activateNavItem(activeSectionId);
         }
-    }
+    }, observerOptions);
 
-    function closeAuthModalFunc() {
-        authModal.style.opacity = '0';
-        setTimeout(() => { authModal.classList.add('hidden'); }, 300);
-    }
+    // 모든 섹션에 관찰자 등록
+    sections.forEach(section => {
+        observer.observe(section);
+    });
 
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        if (isLoginMode) {
-            authTitle.textContent = '로그인';
-            authSubmit.textContent = '로그인';
-            toggleSignupButton.innerHTML = '계정이 없으신가요? → 회원가입';
-            authNicknameInput.classList.add('hidden');
-        } else {
-            authTitle.textContent = '회원가입';
-            authSubmit.textContent = '회원가입';
-            toggleSignupButton.innerHTML = '이미 계정이 있으신가요? → 로그인';
-            authNicknameInput.classList.remove('hidden');
+    // 9-3. 새로운 스타일: 네온 반짝임 효과를 위한 CSS 키프레임 추가
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = `
+        @keyframes pulse-neon {
+            0%, 100% {
+                box-shadow: 0 0 5px #00f3ff, 0 0 10px #00f3ff, 0 0 15px #00f3ff;
+            }
+            50% {
+                box-shadow: 0 0 1px #00f3ff, 0 0 2px #00f3ff, 0 0 5px #00f3ff;
+            }
         }
-    }
-
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const token =
+        .active-pulse {
+            animation: pulse-neon 1.5s infinite alternate;
+        }
+    `;
+    document.head.appendChild(styleSheet);
+});
