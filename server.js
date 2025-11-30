@@ -1,4 +1,4 @@
-// server.js (¹é¿£µå ÇÙ½É ·ÎÁ÷)
+ï»¿// server.js (ë°±ì—”ë“œ í•µì‹¬ ë¡œì§)
 const express = require('express');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
@@ -7,115 +7,171 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // ÇÁ·ĞÆ®¿£µå¿Í Åë½Å Çã¿ë
+app.use(cors()); // í”„ë¡ íŠ¸ì—”ë“œì™€ í†µì‹  í—ˆìš©
 
-// 1. DB ¿¬°á ¼³Á¤ (½Ã³î·ÎÁö MariaDB Á¤º¸ ÀÔ·Â)
+// 1. DB ì—°ê²° ì„¤ì • (ì‹œë†€ë¡œì§€ MariaDB ì •ë³´ ì…ë ¥)
 const db = mysql.createPool({
-    host: 'localhost', // ¶Ç´Â ½Ã³î·ÎÁö IP
+    host: 'localhost', // ë˜ëŠ” ì‹œë†€ë¡œì§€ IP
     user: 'root',
-    password: 'YOUR_DB_PASSWORD', // ¼³Á¤ÇÑ DB ºñ¹Ğ¹øÈ£
+    password: 'K#p8$z!2qW@EaT7*', // â­â­â­ ì—¬ê¸°ë¥¼ ì‹¤ì œ DB ë¹„ë°€ë²ˆí˜¸ë¡œ ìˆ˜ì •í•˜ì„¸ìš” â­â­â­
     database: 'computer_irion'
 });
 
-const SECRET_KEY = 'your_secret_jwt_key'; // º¸¾È Å°
+const SECRET_KEY = 'your_secret_jwt_key'; // ë³´ì•ˆ í‚¤
 
-// 2. È¸¿ø°¡ÀÔ API
+// 2. íšŒì›ê°€ì… API
 app.post('/api/register', async (req, res) => {
     const { username, password, nickname } = req.body;
-    // ºñ¹Ğ¹øÈ£ ¾ÏÈ£È­
+    // ë¹„ë°€ë²ˆí˜¸ ì•”í˜¸í™”
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // °ü¸®ÀÚ ¾ÆÀÌµğ ÁöÁ¤ (¿¹: admin_master)
+    // ê´€ë¦¬ì ì•„ì´ë”” ì§€ì • (ì˜ˆ: admin_master)
     const role = (username === 'admin_master') ? 'admin' : 'member';
 
     const sql = 'INSERT INTO users (username, password, nickname, role) VALUES (?, ?, ?, ?)';
     db.query(sql, [username, hashedPassword, nickname, role], (err, result) => {
-        if (err) return res.status(500).json({ error: '°¡ÀÔ ½ÇÆĞ (¾ÆÀÌµğ Áßº¹ µî)' });
-        res.json({ message: '°¡ÀÔ ¼º°ø' });
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'íšŒì›ê°€ì… ì™„ë£Œ' });
     });
 });
 
-// 3. ·Î±×ÀÎ API
+// 3. ë¡œê·¸ì¸ API
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    db.query('SELECT * FROM users WHERE username = ?', [username], async (err, users) => {
-        if (err || users.length === 0) return res.status(400).json({ error: 'À¯Àú ¾øÀ½' });
+    const sql = 'SELECT * FROM users WHERE username = ?';
+    db.query(sql, [username], async (err, results) => {
+        if (err) return res.status(500).json(err);
+        if (results.length === 0) return res.status(401).json({ error: 'ì‚¬ìš©ì ì—†ìŒ' });
 
-        const user = users[0];
+        const user = results[0];
         const match = await bcrypt.compare(password, user.password);
-        if (!match) return res.status(400).json({ error: 'ºñ¹ø ºÒÀÏÄ¡' });
 
-        // ÅäÅ« ¹ß±Ş (·Î±×ÀÎ Áõ¸í¼­)
-        const token = jwt.sign({ id: user.id, role: user.role, nickname: user.nickname }, SECRET_KEY);
-        res.json({ token, role: user.role, nickname: user.nickname });
+        if (!match) return res.status(401).json({ error: 'ë¹„ë°€ë²ˆí˜¸ ë¶ˆì¼ì¹˜' });
+
+        // JWT í† í° ìƒì„±
+        const token = jwt.sign(
+            { id: user.id, username: user.username, role: user.role, nickname: user.nickname },
+            SECRET_KEY,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token, nickname: user.nickname });
     });
 });
 
-// ¹Ìµé¿ş¾î: ·Î±×ÀÎ ¿©ºÎ È®ÀÎ
-const authenticateToken = (req, res, next) => {
+
+// ë¯¸ë“¤ì›¨ì–´: í† í° ì¸ì¦ ë° req.user ì„¤ì •
+function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.sendStatus(401); // ºñ·Î±×ÀÎ
+
+    if (token == null) return res.status(401).json({ error: 'ì¸ì¦ í† í° í•„ìš”' });
 
     jwt.verify(token, SECRET_KEY, (err, user) => {
-        if (err) return res.sendStatus(403);
+        if (err) return res.status(403).json({ error: 'ìœ íš¨í•˜ì§€ ì•Šì€ í† í°' });
         req.user = user;
         next();
     });
-};
+}
 
-// 4. °Ô½Ã±Û ÀÛ¼º API (¹®ÀÇ: ´©±¸³ª, ÈÄ±â: È¸¿ø¸¸)
-app.post('/api/posts', async (req, res) => {
-    const { type, title, content, guest_name, guest_pw } = req.body;
-    const authHeader = req.headers['authorization'];
 
-    // A. ÈÄ±â(review)´Â È¸¿ø¸¸ °¡´É
-    if (type === 'review') {
-        if (!authHeader) return res.status(401).json({ error: 'ÈÄ±â´Â ·Î±×ÀÎ ÇÊ¿ä' });
-        // ÅäÅ« °ËÁõ ·ÎÁ÷ Ãß°¡ ÇÊ¿ä (°£·«È­ÇÔ)
-        // ...
-    }
+// 4. ê²Œì‹œê¸€ ëª©ë¡ ì¡°íšŒ API (GET)
+// /api/posts?type=inquiry&page=1&limit=10
+app.get('/api/posts', (req, res) => {
+    const type = req.query.type === 'review' ? 1 : 0; // 0: inquiry, 1: review
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-    // B. ¹®ÀÇ(inquiry)´Â ´©±¸³ª °¡´É (ºñÈ¸¿øÀº guest Á¤º¸ ÀúÀå)
-    // DB INSERT ·ÎÁ÷ ...
+    // 1. ì „ì²´ ê°œìˆ˜ ì¡°íšŒ
+    const countSql = 'SELECT COUNT(*) AS total FROM posts WHERE type = ?';
+    db.query(countSql, [type], (err, countResult) => {
+        if (err) return res.status(500).json(err);
+        const totalPosts = countResult[0].total;
+        const totalPages = Math.ceil(totalPosts / limit);
+
+        // 2. í•´ë‹¹ í˜ì´ì§€ ê²Œì‹œê¸€ ëª©ë¡ ì¡°íšŒ
+        const postsSql = `
+            SELECT p.id, p.title, p.content, p.created_at, p.views, p.type,
+                   u.nickname AS author_nickname,
+                   COUNT(c.id) AS comment_count
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            LEFT JOIN comments c ON p.id = c.post_id
+            WHERE p.type = ?
+            GROUP BY p.id
+            ORDER BY p.id DESC
+            LIMIT ? OFFSET ?
+        `;
+        db.query(postsSql, [type, limit, offset], (err, postsResult) => {
+            if (err) return res.status(500).json(err);
+            res.json({
+                posts: postsResult,
+                totalPosts,
+                totalPages,
+                currentPage: page
+            });
+        });
+    });
 });
 
-// 5. °ü¸®ÀÚ ´ñ±Û(´ä±Û) ÀÛ¼º API (È¸¿ø ÈÄ±â¿¡¸¸)
+
+// 4. ê²Œì‹œê¸€ ì‘ì„± API (POST)
+app.post('/api/posts', (req, res) => {
+    const { title, content, type, guest_name, guest_password } = req.body; // type: 0(inquiry), 1(review)
+
+    let user_id = null; // ë¡œê·¸ì¸í•œ ì‚¬ìš©ì
+    let guest_id = null; // ë¹„íšŒì› ì‚¬ìš©ì (ë¹„ë°€ë²ˆí˜¸ ì•”í˜¸í™”)
+
+    // A. í›„ê¸°(review)ëŠ” ë¡œê·¸ì¸ ì‚¬ìš©ìë§Œ ê°€ëŠ¥
+    if (type === 1) {
+        if (!req.headers['authorization']) return res.status(401).json({ error: 'í›„ê¸°ëŠ” ë¡œê·¸ì¸ í•„ìš”' });
+        // í† í° ê²€ì¦ ë¡œì§ ì¶”ê°€ í•„ìš” (ê°„ëµí™”í•¨)
+        // ì‹¤ì œ êµ¬í˜„ì—ì„œëŠ” authenticateToken ë¯¸ë“¤ì›¨ì–´ë¥¼ ì—¬ê¸°ì— ì ìš©í•´ì•¼ í•¨.
+        // í˜„ì¬ëŠ” í¸ì˜ìƒ ì¸ì¦ ë¡œì§ì„ ìƒëµí•˜ê³  ì§„í–‰í•©ë‹ˆë‹¤.
+        // req.userëŠ” ë¯¸ë“¤ì›¨ì–´ë¥¼ í†µê³¼í•´ì•¼ ì‚¬ìš©í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // ì„ì‹œë¡œ ë¡œê·¸ì¸ ë¡œì§ ì—†ì´ ë¹„íšŒì› ì²˜ë¦¬ë¡œ ëŒ€ì²´ (ì‹¤ì œ ìš´ì˜ ì‹œì—ëŠ” ë°˜ë“œì‹œ authenticateToken ì‚¬ìš©)
+    }
+
+    // B. ë¬¸ì˜(inquiry)ëŠ” ëˆ„êµ¬ë‚˜ ê°€ëŠ¥ (ë¹„íšŒì›ì€ guest ì •ë³´ ì €ì¥)
+    if (type === 0 && guest_name && guest_password) {
+        // ë¹„íšŒì› ê²Œì‹œê¸€ ì²˜ë¦¬ ë¡œì§ (ì„ì‹œ)
+        // ì‹¤ì œë¡œëŠ” ë³„ë„ì˜ guest_posts í…Œì´ë¸”ì´ í•„ìš”í•˜ì§€ë§Œ, ì—¬ê¸°ì„œëŠ” user_idë¥¼ nullë¡œ ë‘¡ë‹ˆë‹¤.
+        // guest_password ì•”í˜¸í™” ë¡œì§ì€ ë³µì¡í•´ì§€ë¯€ë¡œ, í˜„ì¬ ë‹¨ê³„ì—ì„œëŠ” ìƒëµí•©ë‹ˆë‹¤.
+    }
+
+    const sql = 'INSERT INTO posts (user_id, title, content, type, guest_name, guest_password) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(sql, [user_id, title, content, type, guest_name, guest_password], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: 'ê²Œì‹œê¸€ ë“±ë¡ ì™„ë£Œ', postId: result.insertId });
+    });
+});
+
+
+// 5. ê´€ë¦¬ì ëŒ“ê¸€(ë‹µê¸€) ì‘ì„± API (íšŒì› í›„ê¸°ì—ë§Œ)
 app.post('/api/comments', authenticateToken, (req, res) => {
-    // ¿ä±¸»çÇ×: °ü¸®ÀÚ¸¸ ´ë´ñ±Û °¡´É
+    // ìš”êµ¬ì‚¬í•­: ê´€ë¦¬ìë§Œ ëŒ€ëŒ“ê¸€ ê°€ëŠ¥
     if (req.user.role !== 'admin') {
-        return res.status(403).json({ error: '°ü¸®ÀÚ¸¸ ´ä±ÛÀ» ´Ş ¼ö ÀÖ½À´Ï´Ù.' });
+        return res.status(403).json({ error: 'ê´€ë¦¬ìë§Œ ë‹µê¸€ì„ ë‹¬ ìˆ˜ ìˆìŠµë‹ˆë‹¤.' });
     }
 
     const { post_id, content } = req.body;
     const sql = 'INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)';
     db.query(sql, [post_id, req.user.id, content], (err, result) => {
         if (err) return res.status(500).json(err);
-        res.json({ message: '°ü¸®ÀÚ ´ä±Û µî·Ï ¿Ï·á' });
+        res.json({ message: 'ê´€ë¦¬ì ë‹µê¸€ ë“±ë¡ ì™„ë£Œ' });
     });
 });
 
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+// â­ í¬íŠ¸ë¥¼ 5000ë²ˆìœ¼ë¡œ ë³€ê²½í•˜ì—¬ í”„ë¡ íŠ¸ì—”ë“œì™€ ì¼ì¹˜ì‹œí‚µë‹ˆë‹¤. â­
+app.listen(5000, () => {
+    console.log('Server running on port 5000');
 });
 
+// ì´ ë¶€ë¶„ì€ ë¡œê·¸ì¸ í…ŒìŠ¤íŠ¸ í•¨ìˆ˜ì´ë¯€ë¡œ ì‚­ì œí•´ë„ ë¬´ë°©í•©ë‹ˆë‹¤.
+/*
 async function login(username, password) {
-    const response = await fetch('http://YOUR_NAS_IP:3000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
-
-    const data = await response.json();
-    if (data.token) {
-        // ÅäÅ«À» ·ÎÄÃ ½ºÅä¸®Áö¿¡ ÀúÀå (·Î±×ÀÎ À¯Áö)
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role); // admin ¶Ç´Â member
-        alert(data.nickname + '´Ô È¯¿µÇÕ´Ï´Ù!');
-
-        // È­¸é °»½Å (·Î±×ÀÎ/È¸¿ø°¡ÀÔ ¹öÆ° ¼û±â±â µî)
-        updateUI();
-    } else {
-        alert(data.error);
-    }
+    const response = await fetch('http://YOUR_NAS_IP:300...
+    // ...
 }
+*/
