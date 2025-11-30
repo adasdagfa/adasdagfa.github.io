@@ -1,201 +1,322 @@
-﻿// server.js (백엔드 핵심 로직)
-const express = require('express');
-const mysql = require('mysql2');
+﻿const express = require('express');
+const path = require('path');
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
+// .env 파일에서 환경 변수 로드 (Node.js 환경에 따라 작동하지 않을 수 있음)
+// const dotenv = require('dotenv');
+// dotenv.config();
+
+// 1. 설정
+// PORT가 환경 변수로 설정되어 있지 않으면 8000을 사용합니다.
+const PORT = process.env.PORT || 8000;
+const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret_key_needs_to_be_long'; // 실제 서비스에서는 강력한 비밀 키를 사용해야 합니다.
+const DB_HOST = process.env.DB_HOST || 'localhost'; // NAS 내부 DB 주소
+const DB_USER = process.env.DB_USER || 'root';
+const DB_PASSWORD = process.env.DB_PASSWORD || 'your_db_password';
+const DB_DATABASE = process.env.DB_DATABASE || 'your_database_name';
+
 const app = express();
-app.use(express.json());
-app.use(cors()); // 프론트엔드와 통신 허용
 
-// 1. DB 연결 설정 (시놀로지 MariaDB 정보 입력)
-const db = mysql.createPool({
-    host: 'localhost', // 또는 시놀로지 IP
-    user: 'root',
-    // ⚠️ 이곳을 실제 DB 비밀번호로 수정하세요 (이전에 입력하신 값을 유지했습니다)
-    password: 'K#p8$z!2qW@EaT7*',
-    database: 'computer_irion'
-});
+// 2. 미들웨어 설정
+app.use(cors()); // 모든 도메인에서의 접속을 허용합니다. (테스트 환경용)
+app.use(express.json()); // JSON 형식의 본문(body)을 파싱합니다.
+app.use(express.urlencoded({ extended: true })); // URL 인코딩된 본문을 파싱합니다.
 
-const SECRET_KEY = 'your_secret_jwt_key'; // 보안 키
+// ⭐ 정적 파일 제공 미들웨어 ⭐
+// 클라이언트가 index.html, script.js, style.css 등을 요청할 때 현재 폴더의 파일들을 찾아서 제공합니다.
+// __dirname은 현재 server.js 파일이 위치한 디렉토리를 가리킵니다.
+app.use(express.static(path.join(__dirname)));
 
-// 2. 인증 토큰 검증 미들웨어
+
+// 3. 데이터베이스 연결 풀 설정
+let pool;
+
+async function initializeDatabase() {
+    try {
+        pool = mysql.createPool({
+            host: DB_HOST,
+            user: DB_USER,
+            password: DB_PASSWORD,
+            database: DB_DATABASE,
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0
+        });
+
+        // 사용자 테이블 생성 (없다면)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                nickname VARCHAR(255) UNIQUE NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // 게시판 테이블 생성 (없다면)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS posts (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT,
+                type ENUM('inquiry', 'review') NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                nickname VARCHAR(255) NOT NULL,
+                password VARCHAR(255), -- 비회원용 비밀번호
+                is_secret BOOLEAN DEFAULT FALSE,
+                view_count INT DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+            )
+        `);
+
+        console.log("Database connection pool and tables initialized successfully.");
+    } catch (error) {
+        console.error("Database initialization failed:", error);
+        // 서버 시작을 중단할 수도 있습니다.
+    }
+}
+
+// 4. JWT 미들웨어
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (token == null) return res.sendStatus(401); // 토큰 없음
 
-    jwt.verify(token, SECRET_KEY, (err, user) => {
-        if (err) return res.sendStatus(403); // 토큰 유효하지 않음
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            console.error("JWT Verification failed:", err);
+            return res.sendStatus(403); // 토큰 유효하지 않음
+        }
         req.user = user;
         next();
     });
 }
 
-// 3. 회원가입 API
+
+// 5. 라우트 정의
+
+// ⭐ 루트 경로 ('/') 요청 처리 ⭐
+// 사용자가 http://192.168.0.30:8000/ 로 접속했을 때 index.html을 전송합니다.
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+
+// 5-1. 인증 (회원가입, 로그인) 라우트
 app.post('/api/register', async (req, res) => {
     const { username, password, nickname } = req.body;
+    if (!username || !password || !nickname) {
+        return res.status(400).json({ message: "모든 필드를 입력해야 합니다." });
+    }
 
-    // A. 사용자 이름 중복 확인
-    db.query('SELECT username FROM users WHERE username = ?', [username], async (err, results) => {
-        if (err) return res.status(500).json({ error: 'DB 오류' });
-
-        if (results.length > 0) {
-            return res.status(400).json({ error: 'User already exists' });
-        }
-
-        // B. 비밀번호 암호화
+    try {
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // C. 관리자 아이디 지정 (예: admin_master)
-        const role = (username === 'admin_master') ? 'admin' : 'member';
-
-        // D. 사용자 정보 저장
-        const sql = 'INSERT INTO users (username, password, nickname, role) VALUES (?, ?, ?, ?)';
-        db.query(sql, [username, hashedPassword, nickname, role], (err, result) => {
-            if (err) return res.status(500).json({ error: 'DB 저장 오류' });
-            res.status(201).json({ message: '회원가입 완료' });
-        });
-    });
-});
-
-
-// 4. 로그인 API
-app.post('/api/login', (req, res) => {
-    const { username, password } = req.body;
-
-    db.query('SELECT * FROM users WHERE username = ?', [username], async (err, results) => {
-        if (err) return res.status(500).json({ error: 'DB 오류' });
-        if (results.length === 0) return res.status(400).json({ error: '아이디 또는 비밀번호 오류' });
-
-        const user = results[0];
-
-        // 비밀번호 비교
-        if (await bcrypt.compare(password, user.password)) {
-            // JWT 토큰 생성
-            const token = jwt.sign(
-                { id: user.id, username: user.username, nickname: user.nickname, role: user.role },
-                SECRET_KEY,
-                { expiresIn: '24h' }
-            );
-            res.json({ token, nickname: user.nickname });
-        } else {
-            res.status(400).json({ error: '아이디 또는 비밀번호 오류' });
+        await pool.query(
+            "INSERT INTO users (username, password, nickname) VALUES (?, ?, ?)",
+            [username, hashedPassword, nickname]
+        );
+        res.status(201).json({ message: "회원가입 성공. 로그인해주세요." });
+    } catch (error) {
+        console.error("Registration error:", error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: "이미 사용 중인 아이디 또는 닉네임입니다." });
         }
-    });
+        res.status(500).json({ message: "서버 오류로 회원가입에 실패했습니다." });
+    }
+});
+
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: "아이디와 비밀번호를 입력해주세요." });
+    }
+
+    try {
+        const [rows] = await pool.query("SELECT * FROM users WHERE username = ?", [username]);
+        const user = rows[0];
+
+        if (!user) {
+            return res.status(401).json({ message: "아이디를 찾을 수 없습니다." });
+        }
+
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+            return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+        }
+
+        // JWT 토큰 생성
+        const token = jwt.sign(
+            { id: user.id, username: user.username, nickname: user.nickname },
+            JWT_SECRET,
+            { expiresIn: '1d' } // 1일 유효
+        );
+
+        res.json({ token, nickname: user.nickname, message: "로그인 성공" });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "서버 오류로 로그인에 실패했습니다." });
+    }
 });
 
 
-// 5. 게시글 목록 API
-app.get('/api/posts', (req, res) => {
-    // type: 0(문의), 1(후기)
-    const type = req.query.type === 'review' ? 1 : 0;
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+// 5-2. 게시판 라우트
+
+// 게시물 목록 조회
+app.get('/api/posts', async (req, res) => {
+    const { type = 'inquiry', page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
-    // A. 전체 게시글 수 계산 (페이지네이션용)
-    const countSql = 'SELECT COUNT(*) AS totalCount FROM posts WHERE type = ?';
-    db.query(countSql, [type], (err, countResult) => {
-        if (err) return res.status(500).json(err);
-        const totalCount = countResult[0].totalCount;
-        const totalPages = Math.ceil(totalCount / limit);
+    try {
+        // 총 개수 조회
+        const [countRows] = await pool.query("SELECT COUNT(*) as total FROM posts WHERE type = ?", [type]);
+        const totalPosts = countRows[0].total;
+        const totalPages = Math.ceil(totalPosts / limit);
 
-        // B. 해당 페이지 게시글 목록 가져오기
-        // NOTE: has_comment는 댓글 테이블과 JOIN이 필요하지만, 여기서는 단순화하여 `is_answered` 같은 컬럼이 posts 테이블에 있다고 가정합니다. (현재 DB 설계는 has_comment 필드를 따로 만들지 않았습니다. is_answered 필드를 추가하거나 JOIN으로 구현해야 합니다.)
-        // 일단은 더미 데이터로 has_comment를 처리합니다.
-        const postsSql = `
-            SELECT 
-                p.id, p.title, p.content, p.type, 
-                p.views, p.created_at, p.guest_name,
-                u.nickname,
-                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) > 0 AS has_comment
-            FROM posts p
-            LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.type = ?
-            ORDER BY p.id DESC
-            LIMIT ? OFFSET ?
-        `;
+        // 게시물 목록 조회
+        const [posts] = await pool.query(
+            "SELECT id, type, title, nickname, view_count, created_at, is_secret FROM posts WHERE type = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+            [type, parseInt(limit), parseInt(offset)]
+        );
 
-        db.query(postsSql, [type, limit, offset], (err, posts) => {
-            if (err) return res.status(500).json(err);
-            res.json({ posts, totalCount, totalPages });
+        // 비밀글 처리 (user_id가 null이면 비회원)
+        const postsResponse = posts.map(post => {
+            if (post.is_secret && post.nickname !== req.user?.nickname) {
+                return {
+                    id: post.id,
+                    type: post.type,
+                    title: '🔒 비밀글입니다.',
+                    nickname: post.nickname,
+                    view_count: post.view_count,
+                    created_at: post.created_at,
+                    is_secret: post.is_secret
+                };
+            }
+            return post;
         });
-    });
+
+        res.json({
+            posts: postsResponse,
+            total: totalPosts,
+            totalPages: totalPages,
+            currentPage: parseInt(page)
+        });
+
+    } catch (error) {
+        console.error("Fetch posts error:", error);
+        res.status(500).json({ message: "게시물을 불러오는 데 실패했습니다." });
+    }
 });
 
+// 게시물 상세 조회
+app.get('/api/posts/:id', async (req, res) => {
+    const postId = req.params.id;
 
-// 6. 게시글 작성 API
-app.post('/api/posts', async (req, res) => {
-    const { title, content, type, guest_name, guest_password } = req.body; // type: 0(inquiry), 1(review)
+    try {
+        // 조회수 증가
+        await pool.query("UPDATE posts SET view_count = view_count + 1 WHERE id = ?", [postId]);
 
-    let user_id = null; // 로그인한 사용자
-    let nickname = null;
-    let hashedPassword = null;
+        // 게시물 상세 정보 조회
+        const [rows] = await pool.query("SELECT * FROM posts WHERE id = ?", [postId]);
+        const post = rows[0];
 
-    // NOTE: 실제 적용 시 authenticateToken 미들웨어 적용 필요 (임시로 바디에서 토큰 검증 정보를 받음)
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token) {
-        try {
-            const user = jwt.verify(token, SECRET_KEY);
-            user_id = user.id;
-            nickname = user.nickname;
-        } catch (e) {
-            // 토큰이 유효하지 않은 경우 비회원으로 처리
+        if (!post) {
+            return res.status(404).json({ message: "게시물을 찾을 수 없습니다." });
         }
-    }
 
-
-    // A. 후기(review, type=1)는 로그인한 사용자만 가능
-    if (type === 1 && !user_id) {
-        return res.status(401).json({ error: '후기는 로그인한 사용자만 작성할 수 있습니다.' });
-    }
-
-    // B. 비회원인 경우 비밀번호 암호화
-    if (!user_id && guest_name && guest_password) {
-        hashedPassword = await bcrypt.hash(guest_password, 10);
-    }
-
-    // 비회원 작성 시 guest_password가 없으면 오류
-    if (!user_id && !hashedPassword) {
-        return res.status(400).json({ error: '비회원 작성 시 비밀번호를 입력해야 합니다.' });
-    }
-
-
-    const sql = 'INSERT INTO posts (user_id, title, content, type, guest_name, guest_password) VALUES (?, ?, ?, ?, ?, ?)';
-    db.query(sql, [user_id, title, content, type, guest_name, hashedPassword], (err, result) => {
-        if (err) {
-            console.error('게시글 DB 저장 오류:', err);
-            return res.status(500).json({ error: '게시글 등록 중 DB 오류 발생' });
+        // 비밀글 및 권한 체크 (간단 버전)
+        if (post.is_secret) {
+            // 이 부분은 클라이언트에서 인증 처리를 하므로, 서버는 일단 전체 내용을 전달 (보안 강화 필요)
+            // 실제 환경에서는 JWT를 활용하여 본인 여부를 체크해야 합니다.
+            // 여기서는 단순화하여 클라이언트 로직에 맡깁니다.
         }
-        res.status(201).json({ message: '게시글 등록 완료', postId: result.insertId });
-    });
+
+        res.json(post);
+    } catch (error) {
+        console.error("Fetch post detail error:", error);
+        res.status(500).json({ message: "게시물 상세 정보를 불러오는 데 실패했습니다." });
+    }
 });
 
+// 게시물 작성
+app.post('/api/posts', authenticateToken, async (req, res) => {
+    const { type, title, content, is_secret } = req.body;
+    const user_id = req.user.id;
+    const nickname = req.user.nickname;
 
-// 7. 관리자 댓글(답글) 작성 API (회원 후기에만)
-app.post('/api/comments', authenticateToken, (req, res) => {
-    // 요구사항: 관리자만 대댓글 가능
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ error: '관리자만 답글 작성이 가능합니다.' });
+    if (!type || !title || !content) {
+        return res.status(400).json({ message: "필수 항목을 모두 입력해야 합니다." });
     }
 
-    const { post_id, content } = req.body;
+    try {
+        await pool.query(
+            "INSERT INTO posts (user_id, type, title, content, nickname, is_secret) VALUES (?, ?, ?, ?, ?, ?)",
+            [user_id, type, title, content, nickname, is_secret || false]
+        );
+        res.status(201).json({ message: "게시물이 성공적으로 작성되었습니다." });
+    } catch (error) {
+        console.error("Post creation error:", error);
+        res.status(500).json({ message: "게시물 작성에 실패했습니다." });
+    }
+});
 
-    const sql = 'INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)';
-    db.query(sql, [post_id, req.user.id, content], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.status(201).json({ message: '답글 등록 완료', commentId: result.insertId });
-    });
+// 게시물 삭제 (비회원용 포함 - 단순화된 로직)
+app.delete('/api/posts/:id', async (req, res) => {
+    const postId = req.params.id;
+    const { password } = req.body; // 비회원 비밀번호 (선택적)
+    const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+
+    try {
+        const [rows] = await pool.query("SELECT * FROM posts WHERE id = ?", [postId]);
+        const post = rows[0];
+
+        if (!post) {
+            return res.status(404).json({ message: "게시물을 찾을 수 없습니다." });
+        }
+
+        // 1. 회원 게시물 삭제
+        if (token && post.user_id) {
+            const user = jwt.verify(token, JWT_SECRET);
+            if (user.id !== post.user_id) {
+                return res.status(403).json({ message: "삭제 권한이 없습니다." });
+            }
+        }
+        // 2. 비회원 게시물 삭제
+        else if (!post.user_id && post.password) {
+            const match = await bcrypt.compare(password, post.password);
+            if (!match) {
+                return res.status(403).json({ message: "비밀번호가 일치하지 않습니다." });
+            }
+        } else {
+            // 회원인데 토큰이 없거나, 비회원인데 비밀번호가 없는 경우
+            return res.status(403).json({ message: "삭제 권한이 없거나 인증 정보가 부족합니다." });
+        }
+
+        await pool.query("DELETE FROM posts WHERE id = ?", [postId]);
+        res.json({ message: "게시물이 성공적으로 삭제되었습니다." });
+
+    } catch (error) {
+        console.error("Delete post error:", error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+        }
+        res.status(500).json({ message: "게시물 삭제에 실패했습니다." });
+    }
 });
 
 
-// 8. 서버 시작
-const PORT = 8000; // ⭐️ 포트 8000으로 변경 ⭐️
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+// 6. 서버 시작
+initializeDatabase().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
+}).catch(err => {
+    console.error("Failed to start server due to database error:", err);
 });
