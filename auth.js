@@ -1,7 +1,7 @@
 ﻿// auth.js
 document.addEventListener("DOMContentLoaded", function () {
     // ⭐ 수정됨: 포트 8000으로 변경 ⭐
-    const SERVER_URL = 'http://192.168.0.100:8000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
+    const SERVER_URL = 'http://192.168.0.30:8000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
 
     // 1. DOM 요소
     const authModal = document.getElementById('auth-modal');
