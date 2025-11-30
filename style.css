@@ -184,3 +184,39 @@ body {
     animation: scroll-rtl linear infinite;
     animation-duration: 30s; /* 빠른 속도 */
 }
+
+/* --- 사이드 네비게이션 스타일 --- */
+#side-nav {
+    /* 우측 정렬된 메뉴를 위한 컨테이너 */
+    perspective: 1000px;
+}
+
+.side-nav-item a {
+    /* 기본 텍스트 스타일 */
+    position: relative;
+    padding: 5px 10px;
+    display: block;
+}
+
+/* ⭐ 반짝이는 활성화 스타일 ⭐ */
+.side-nav-item.active a {
+    color: #00f3ff !important; /* 네온 시안 색상 */
+    font-weight: bold;
+    /* 텍스트 네온 효과 */
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.5), 0 0 10px rgba(0, 243, 255, 0.4);
+    /* 얇은 테두리 및 배경 효과 */
+    border-right: 2px solid #ff00ff; /* 핑크색 하이라이트 */
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 243, 255, 0.05) 50%, transparent 100%);
+    animation: pulse-glow 2s infinite alternate; /* 반짝이는 애니메이션 적용 */
+}
+
+/* 활성화된 항목의 반짝이는 효과 */
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 5px #ff00ff;
+    }
+}

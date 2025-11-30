@@ -169,12 +169,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // ⭐ 7. 방문자 카운터: CounterAPI.dev V2 로직으로 완벽 교체 ⭐
     const countElement = document.getElementById('visitor-count-number');
 
-    // 📢 중요: 사용자님이 제공한 API 키와 엔드포인트로 변경되었습니다.
     const YOUR_API_KEY = "ut_v51MEVP3IRZSPHtBOCddgX8Zqk3M3eCqXiW0cxDZ"; // <--- 사용자님의 실제 API Key
-    // 기본 엔드포인트: 캡처 화면 참고
     const BASE_ENDPOINT = "https://api.counterapi.dev/v2/s-team-4-1812/컴퓨터-이리온-방문";
-
-    // 카운터 증가 엔드포인트 (기본 엔드포인트 + /up)
     const API_HIT_ENDPOINT = `${BASE_ENDPOINT}/up`;
 
     if (countElement) {
@@ -195,26 +191,21 @@ document.addEventListener("DOMContentLoaded", function () {
             }, stepTime);
         }
 
-        // v2 API 요청 옵션 (인증 헤더 필수)
         const requestOptions = {
             method: 'GET',
             headers: {
-                // Bearer 토큰 형식으로 API 키를 헤더에 포함
                 'Authorization': `Bearer ${YOUR_API_KEY}`
             }
         };
 
-        // 새 CounterAPI 호출 (페이지 로드 시 카운터 증가 및 값 가져오기)
         fetch(API_HIT_ENDPOINT, requestOptions)
             .then(response => {
                 if (!response.ok) {
-                    // 오류 발생 시, 응답 본문을 읽어 정확한 에러 확인 시도
                     return response.json().then(err => { throw new Error(JSON.stringify(err)); });
                 }
                 return response.json();
             })
             .then(data => {
-                // v2 응답 구조에 맞게 'count' 속성 사용
                 if (data && typeof data.count === 'number') {
                     animateCountUp(data.count);
                 } else {
@@ -223,7 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => {
                 console.error('Visitor counter error (CounterAPI.dev V2):', error);
-                // 오류 발생 시 표시될 텍스트
                 countElement.textContent = '연결 실패 (API 오류)';
             });
     }
@@ -239,4 +229,104 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
-});
+
+    // ⭐ 9. 사이드 네비게이션 연동 및 스크롤 이벤트 로직 ⭐
+
+    const sections = document.querySelectorAll('section, header#home');
+    const sideNavItems = document.querySelectorAll('.side-nav-item');
+
+    function updateSideNav() {
+        let currentSection = null;
+
+        const scrollPosition = window.scrollY + 100;
+
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.offsetHeight;
+
+            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                currentSection = section.id;
+            }
+        });
+
+        sideNavItems.forEach(item => {
+            if (item.dataset.target === currentSection) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    window.addEventListener('scroll', updateSideNav);
+    updateSideNav(); // 페이지 로드 시 초기 위치 반영
+
+    // ⭐ 10. 로그인/회원가입 모달 관련 로직 ⭐
+    const authModal = document.getElementById('auth-modal');
+    const authButton = document.getElementById('auth-button');
+    const closeAuthModal = document.getElementById('close-auth-modal');
+    const toggleSignupButton = document.getElementById('toggle-signup');
+    const authForm = document.getElementById('auth-form');
+    const authTitle = document.getElementById('modal-title');
+    const authSubmit = document.getElementById('auth-submit');
+    const authNicknameInput = document.getElementById('auth-nickname');
+
+    let isLoginMode = true;
+
+    // ✅ NAS 서버 주소 최종 반영 (yellowneko.iptime.org, Node.js 포트 5000 사용)
+    const SERVER_URL = 'http://yellowneko.iptime.org:5000/api';
+
+    function openAuthModal() {
+        authModal.classList.remove('hidden');
+        setTimeout(() => { authModal.style.opacity = '1'; }, 10);
+
+        // 입력값 초기화
+        document.getElementById('auth-username').value = '';
+        document.getElementById('auth-password').value = '';
+        document.getElementById('auth-nickname').value = '';
+
+        // 현재 로그인/로그아웃 상태에 따라 버튼 텍스트 변경
+        const token = localStorage.getItem('token');
+        const nickname = localStorage.getItem('nickname');
+        if (token) {
+            // 이미 로그인 되어 있다면 로그아웃 버튼 표시
+            authTitle.textContent = `${nickname}님 접속 중`;
+            authSubmit.textContent = '로그아웃';
+            authNicknameInput.classList.add('hidden');
+            toggleSignupButton.classList.add('hidden');
+            document.getElementById('auth-password').classList.add('hidden');
+            document.getElementById('auth-username').classList.add('hidden');
+        } else {
+            // 로그인 상태가 아니라면 로그인 폼 표시
+            isLoginMode = true; // 강제 로그인 모드 설정
+            toggleAuthMode();
+            toggleSignupButton.classList.remove('hidden');
+            document.getElementById('auth-password').classList.remove('hidden');
+            document.getElementById('auth-username').classList.remove('hidden');
+        }
+    }
+
+    function closeAuthModalFunc() {
+        authModal.style.opacity = '0';
+        setTimeout(() => { authModal.classList.add('hidden'); }, 300);
+    }
+
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        if (isLoginMode) {
+            authTitle.textContent = '로그인';
+            authSubmit.textContent = '로그인';
+            toggleSignupButton.innerHTML = '계정이 없으신가요? → 회원가입';
+            authNicknameInput.classList.add('hidden');
+        } else {
+            authTitle.textContent = '회원가입';
+            authSubmit.textContent = '회원가입';
+            toggleSignupButton.innerHTML = '이미 계정이 있으신가요? → 로그인';
+            authNicknameInput.classList.remove('hidden');
+        }
+    }
+
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const token =

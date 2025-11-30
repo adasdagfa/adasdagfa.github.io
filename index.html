@@ -54,22 +54,44 @@
         </div>
     </div>
 
+    <div id="auth-modal" class="fixed inset-0 bg-black/90 z-[10002] hidden flex items-center justify-center p-4 backdrop-blur-md transition-opacity duration-300 opacity-0">
+        <div class="cyber-card w-full max-w-md p-8 border-2 border-neon-cyan/50 shadow-[0_0_20px_rgba(0,243,255,0.3)] relative">
+            <button id="close-auth-modal" class="absolute top-3 right-5 text-white text-3xl hover:text-neon-pink transition-colors">&times;</button>
+            <h3 id="modal-title" class="font-cyber text-2xl text-neon-cyan mb-6 text-center">로그인</h3>
+
+            <form id="auth-form" class="space-y-4">
+                <input type="text" id="auth-username" placeholder="아이디" class="w-full bg-dark border-b border-neon-cyan/50 p-3 text-white focus:outline-none focus:border-neon-cyan">
+                <input type="password" id="auth-password" placeholder="비밀번호" class="w-full bg-dark border-b border-neon-cyan/50 p-3 text-white focus:outline-none focus:border-neon-cyan">
+
+                <input type="text" id="auth-nickname" placeholder="닉네임" class="w-full bg-dark border-b border-neon-pink/50 p-3 text-white focus:outline-none focus:border-neon-pink hidden">
+
+                <button type="submit" id="auth-submit" class="w-full font-cyber mt-6 px-4 py-3 bg-neon-pink text-black hover:bg-white transition-all duration-300 shadow-[0_0_15px_rgba(255,0,255,0.5)]">
+                    로그인
+                </button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <button id="toggle-signup" class="text-sm text-gray-400 hover:text-neon-cyan transition-colors">
+                    계정이 없으신가요? → 회원가입
+                </button>
+            </div>
+        </div>
+    </div>
+
     <nav class="fixed w-full z-50 px-4 py-3 md:px-6 md:py-4 flex justify-between items-center border-b border-neon-cyan/20 bg-[#050a0e]/90 backdrop-blur-md">
         <div class="font-cyber text-xl md:text-2xl font-bold tracking-widest text-white flex items-center cursor-pointer" id="logo-link">
             <span class="text-neon-pink mr-1">&gt;</span>컴퓨터이리온
         </div>
 
         <div class="hidden md:flex space-x-8 font-tech text-lg tracking-wider">
-            <a href="#services" class="text-gray-300 hover:text-neon-cyan transition-colors relative group">서비스</a>
-            <a href="#gallery" class="text-gray-300 hover:text-neon-pink transition-colors relative group">갤러리</a>
-            <a href="#location" class="text-gray-300 hover:text-neon-purple transition-colors relative group">위치</a>
+            <a href="board.html" class="text-neon-pink hover:text-neon-cyan transition-colors relative group font-bold">문의/후기</a>
+            <a href="#" id="auth-button" class="text-gray-300 hover:text-neon-purple transition-colors relative group">로그인/회원가입</a>
             <a href="https://blog.naver.com/computer-irion" target="_blank" class="text-gray-300 hover:text-neon-pink transition-colors relative group">블로그</a>
         </div>
 
         <a href="https://open.kakao.com/o/stei0S0h" target="_blank" class="hidden md:block font-cyber px-6 py-2 border border-neon-cyan text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_15px_#00f3ff] transition-all duration-300">
             카카오톡 문의
         </a>
-
     </nav>
 
     <header id="home" class="relative min-h-screen flex flex-col justify-center items-center px-6 pt-20 text-center overflow-hidden">
@@ -241,6 +263,22 @@
         </div>
     </section>
 
+    <nav id="side-nav" class="fixed right-0 top-1/2 -translate-y-1/2 mr-6 hidden md:block z-40 font-cyber">
+        <ul class="space-y-4 text-right">
+            <li class="side-nav-item" data-target="home">
+                <a href="#home" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="HOME">홈</a>
+            </li>
+            <li class="side-nav-item" data-target="services">
+                <a href="#services" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="SERVICES">서비스</a>
+            </li>
+            <li class="side-nav-item" data-target="gallery">
+                <a href="#gallery" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="GALLERY">갤러리</a>
+            </li>
+            <li class="side-nav-item" data-target="location">
+                <a href="#location" class="text-gray-500 hover:text-neon-cyan transition-colors text-sm" data-nav-name="LOCATION">위치</a>
+            </li>
+        </ul>
+    </nav>
     <footer class="py-12 px-6 text-center relative overflow-hidden bg-black/80">
         <div class="max-w-7xl mx-auto font-tech items-center border-t border-neon-cyan/20 pt-8">
             <div class="mb-4">
