@@ -2,8 +2,8 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ⭐ 수정됨: NAS의 내부 IP 주소로 변경하여 NAT Loopback 문제 우회 ⭐
-    const SERVER_URL = 'http://192.168.0.100:5000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
+    // ⭐ 수정됨: 포트 8000으로 변경 ⭐
+    const SERVER_URL = 'http://192.168.0.100:8000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
     const postListBody = document.getElementById('post-list-body');
     const tabInquiry = document.getElementById('tab-inquiry');
     const tabReview = document.getElementById('tab-review');
@@ -45,7 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const response = await fetch(`${SERVER_URL}/posts?type=${type}&page=${page}`);
             if (!response.ok) {
-                throw new Error('게시물 로드에 실패했습니다.');
+                // 서버가 켜져 있어도 DB 문제 등으로 500 오류가 날 수 있음
+                throw new Error('게시물 로드에 실패했습니다. (DB/서버 로직 오류)');
             }
 
             const result = await response.json();
@@ -162,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // 인증 토큰 가져오기 (로그인 상태일 경우)
         const authToken = localStorage.getItem('authToken');
 
-        // POST 요청 본문 구성 (user_id는 백엔드에서 토큰으로 추출하거나 null로 처리됨)
+        // POST 요청 본문 구성
         const bodyData = {
             title: data.title,
             content: data.content,

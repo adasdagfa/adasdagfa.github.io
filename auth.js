@@ -1,7 +1,7 @@
 ﻿// auth.js
 document.addEventListener("DOMContentLoaded", function () {
-    // ⭐ 수정됨: NAS의 내부 IP 주소로 변경하여 NAT Loopback 문제 우회 ⭐
-    const SERVER_URL = 'http://192.168.0.100:5000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
+    // ⭐ 수정됨: 포트 8000으로 변경 ⭐
+    const SERVER_URL = 'http://192.168.0.100:8000/api'; // ⚠️ 필요 시 이 IP를 실제 NAS 내부 IP로 수정하세요.
 
     // 1. DOM 요소
     const authModal = document.getElementById('auth-modal');
