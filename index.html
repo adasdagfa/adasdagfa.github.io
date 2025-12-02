@@ -11,7 +11,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=Noto+Sans+KR:wght+400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=7xmmesxfh1"></script>
     <link rel="stylesheet" href="style.css">
@@ -73,8 +73,7 @@
                 <span class="nav-dot w-3 h-3 rounded-full border border-white/50 bg-white/20 transition-all duration-300 group-hover:border-neon-cyan group-hover:bg-neon-cyan"></span>
             </a>
         </div>
-
-        <div class="pt-4 border-t border-neon-cyan/20 flex flex-col space-y-3">
+        <div class="pt-4 border-t border-neon-cyan/20 flex flex-col space-y-3 hidden">
             <a href="board.html" class="nav-button font-tech text-center text-sm uppercase text-neon-pink border border-neon-pink py-2 px-4 rounded-full transition-all duration-300 hover:bg-neon-pink/20 hover:shadow-lg hover:shadow-neon-pink/30">
                 문의 / 후기
             </a>
@@ -89,9 +88,9 @@
         </div>
 
         <div class="flex space-x-4 font-tech text-lg tracking-wider">
-            <a href="board.html" class="text-gray-300 hover:text-neon-cyan transition-colors relative group hidden md:block">문의/후기</a>
-            <a href="javascript:void(0);" class="text-gray-300 hover:text-neon-pink transition-colors relative group hidden md:block" id="top-nav-auth-trigger">로그인 / 회원가입</a>
-            <a href="https://blog.naver.com/computer-irion" target="_blank" class="text-gray-300 hover:text-neon-purple transition-colors relative group">블로그</a>
+            <a href="board.html" class="text-gray-300 hover:text-neon-cyan transition-colors relative group hidden">문의/후기</a>
+            <a href="javascript:void(0);" class="text-gray-300 hover:text-neon-pink transition-colors relative group hidden" id="top-nav-auth-trigger">로그인 / 회원가입</a>
+            <a href="https://blog.naver.com/computer-irion" target="_blank" class="text-gray-300 hover:text-neon-purple transition-colors relative group hidden">블로그</a>
         </div>
 
         <a href="https://open.kakao.com/o/stei0S0h" target="_blank" class="hidden md:block font-cyber px-6 py-2 border border-neon-cyan text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-[0_0_15px_#00f3ff] transition-all duration-300">
@@ -277,7 +276,7 @@
             <p class="text-gray-500 text-sm mb-2">대표: 손광국 | 사업자등록번호: 494-54-00682</p>
             <p class="text-gray-500 text-sm mb-6">Copyright © 2025 컴퓨터 이리온. All rights reserved.</p>
 
-            <div class="inline-block border border-neon-purple/50 px-4 py-2 rounded bg-neon-purple/10">
+            <div class="inline-block border border-neon-purple/50 px-4 py-2 rounded bg-neon-purple/10 hidden">
                 <span class="text-gray-400 text-sm mr-2">총 방문자 수:</span>
                 <span id="visitor-count-number" class="text-neon-cyan font-bold font-cyber text-lg">로딩 중...</span>
             </div>
