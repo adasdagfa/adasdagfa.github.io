@@ -336,27 +336,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const popup = document.getElementById('popup');
-    const todayCheck = document.getElementById('today-check');
+    const content = document.querySelector('.popup-content');
+    const body = document.querySelector('.popup-body');
 
-    // 현재 시간 저장
+    // 1. 노출 여부 확인
     const now = new Date().getTime();
     const expireTime = localStorage.getItem('popupExpireTime');
-
-    // 저장된 만료 시간과 현재 시간 비교
     if (!expireTime || now > expireTime) {
         popup.style.display = 'block';
     }
+
+    // 2. 드래그 로직 (중앙 정렬 해제 버전)
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    body.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - content.getBoundingClientRect().left;
+        offsetY = e.clientY - content.getBoundingClientRect().top;
+        content.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        content.style.left = (e.clientX - offsetX) + 'px';
+        content.style.top = (e.clientY - offsetY) + 'px';
+    });
+
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+        content.style.cursor = 'move';
+    });
 });
 
 function closePopup() {
     const popup = document.getElementById('popup');
     const isChecked = document.getElementById('today-check').checked;
-
     if (isChecked) {
-        // 현재 시간으로부터 24시간(1일) 뒤의 타임스탬프 계산
         const expiryDate = new Date().getTime() + (24 * 60 * 60 * 1000);
         localStorage.setItem('popupExpireTime', expiryDate);
     }
-
     popup.style.display = 'none';
 }

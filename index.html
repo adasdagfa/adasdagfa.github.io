@@ -54,20 +54,21 @@
         </div>
     </div>
 
-    <div id="popup" class="popup-overlay">
+    <div id="popup" class="popup-no-mask">
         <div class="popup-content">
-            <h2>공지사항</h2>
-            <p>안녕하세요. 컴퓨터 이리온입니다.</p>
+            <div class="popup-body">
+                <h2>컴퓨터이리온</h2>
+                <p>빠른 수리!<br>지금 바로 확인해보세요.</p>
+            </div>
 
             <div class="popup-footer">
                 <label>
-                    <input type="checkbox" id="today-check"> 오늘 하루 보지 않기
+                    <input type="checkbox" id="today-check"> 오늘 표시하지 않음
                 </label>
                 <button onclick="closePopup()">닫기</button>
             </div>
         </div>
     </div>
-
 
     <nav id="side-nav" class="hidden lg:block fixed top-1/2 -translate-y-1/2 right-4 z-50 p-4 space-y-4 bg-black/50 backdrop-blur-sm border border-neon-cyan/20 rounded-lg shadow-xl shadow-neon-cyan/10">
         <div class="flex flex-col space-y-3">
