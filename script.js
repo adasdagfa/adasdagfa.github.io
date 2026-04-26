@@ -333,3 +333,30 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     document.head.appendChild(styleSheet);
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const popup = document.getElementById('popup');
+    const todayCheck = document.getElementById('today-check');
+
+    // 현재 시간 저장
+    const now = new Date().getTime();
+    const expireTime = localStorage.getItem('popupExpireTime');
+
+    // 저장된 만료 시간과 현재 시간 비교
+    if (!expireTime || now > expireTime) {
+        popup.style.display = 'block';
+    }
+});
+
+function closePopup() {
+    const popup = document.getElementById('popup');
+    const isChecked = document.getElementById('today-check').checked;
+
+    if (isChecked) {
+        // 현재 시간으로부터 24시간(1일) 뒤의 타임스탬프 계산
+        const expiryDate = new Date().getTime() + (24 * 60 * 60 * 1000);
+        localStorage.setItem('popupExpireTime', expiryDate);
+    }
+
+    popup.style.display = 'none';
+}

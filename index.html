@@ -45,7 +45,7 @@
     <div id="loading-bar"></div>
     <div class="scanline"></div>
     <div class="cyber-grid-bg fixed inset-0 -z-10"></div>
-   
+
 
     <div id="image-modal" class="fixed inset-0 bg-black/80 z-[10000] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300 opacity-0">
         <div class="relative max-w-5xl max-h-[95vh] w-full flex items-center justify-center">
@@ -53,6 +53,21 @@
             <button id="close-modal" class="modal-close-btn absolute top-4 right-4 text-white text-4xl hover:text-neon-pink transition-colors">&times;</button>
         </div>
     </div>
+
+    <div id="popup" class="popup-overlay">
+        <div class="popup-content">
+            <h2>공지사항</h2>
+            <p>안녕하세요. 컴퓨터 이리온입니다.</p>
+
+            <div class="popup-footer">
+                <label>
+                    <input type="checkbox" id="today-check"> 오늘 하루 보지 않기
+                </label>
+                <button onclick="closePopup()">닫기</button>
+            </div>
+        </div>
+    </div>
+
 
     <nav id="side-nav" class="hidden lg:block fixed top-1/2 -translate-y-1/2 right-4 z-50 p-4 space-y-4 bg-black/50 backdrop-blur-sm border border-neon-cyan/20 rounded-lg shadow-xl shadow-neon-cyan/10">
         <div class="flex flex-col space-y-3">
