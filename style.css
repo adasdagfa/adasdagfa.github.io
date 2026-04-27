@@ -203,47 +203,78 @@ body {
     top: 80px; /* 이미지처럼 약간 위에서 떨어뜨림 */
     left: 50px; /* 이미지처럼 왼쪽에서 띄움 */
     width: 350px;
-    background: #1a1a1a;
+    background: #ffffff;
+    border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 5px 5px 20px rgba(0,0,0,0.3);
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.15);
     pointer-events: auto; /* 팝업창 안은 다시 클릭 가능하게 설정 */
     user-select: none;
 }
 
 .popup-body {
-    padding: 30px 20px;
+    padding: 35px 20px;
     text-align: center;
-    color: #fff;
+    color: #000000;
     cursor: move;
 }
 
     .popup-body h2 {
         font-size: 22px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        font-weight: bold;
+        color: #000;
     }
 
     .popup-body p {
         font-size: 15px;
-        color: #ccc;
+        line-height: 1.6;
+        color: #333;
     }
 
-/* 하단 바 (이미지 느낌) */
+/* 하단 바: 연한 회색 */
 .popup-footer {
     height: 40px;
-    background: #e0e0e0; /* 연한 회색 */
+    background: #f8f9fa; /* 아주 연한 회색 */
+    border-top: 1px solid #eee;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 12px;
     font-size: 12px;
-    color: #333;
+    color: #666;
 }
 
-    .popup-footer button {
-        background: none;
-        border: none;
+    /* 체크박스 & 버튼 */
+    .popup-footer label {
         cursor: pointer;
-        font-size: 12px;
-        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 5px;
     }
+
+#today-check {
+    accent-color: #333; /* 체크박스 포인트를 어두운 색으로 */
+}
+
+.popup-footer button {
+    background: none;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+}
+
+/* 관리자 버튼 숨기기용 */
+.admin-btn {
+    font-size: 10px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+/* 편집 모드일 때 테두리 */
+[contenteditable="true"]:focus {
+    outline: 2px solid #007bff;
+    background: rgba(0, 123, 255, 0.05);
+}
