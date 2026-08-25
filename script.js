@@ -260,20 +260,30 @@ document.addEventListener("DOMContentLoaded", function () {
         observer.observe(section);
     });
 
-    // 8. 동영상 전용 모달 제어 함수
+    // 8. 유튜브 전용 동영상 모달 제어 함수 (수정 완료)
     window.openVideoModal = function (videoSrc, titleText, colorTheme) {
         const modal = document.getElementById('video-modal');
         const modalContainer = document.getElementById('video-modal-container');
         const modalTitle = document.getElementById('video-modal-title').querySelector('span');
         const titleIcon = document.getElementById('video-title-icon');
-        const player = document.getElementById('custom-video-player');
-        const source = document.getElementById('video-source');
+        const playerContainer = document.getElementById('video-player-container');
 
-        if (!modal || !player || !source) return;
+        if (!modal) return;
 
-        source.src = videoSrc;
-        player.load();
-        modalTitle.textContent = titleText;
+        // 동적으로 유튜브 iframe 삽입 (닫을 때 제거하여 소리 재생 방지)
+        if (playerContainer) {
+            playerContainer.innerHTML = `
+                <iframe class="w-full h-full rounded-b" 
+                        src="${videoSrc}" 
+                        title="${titleText}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                </iframe>
+            `;
+        }
+
+        if (modalTitle) modalTitle.textContent = titleText;
 
         const themeMap = {
             pink: { border: 'border-neon-pink', shadow: 'shadow-[0_0_50px_rgba(255,0,255,0.4)]', icon: 'text-neon-pink' },
@@ -283,37 +293,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const currentTheme = themeMap[colorTheme] || themeMap.pink;
 
-        modalContainer.className = `relative max-w-4xl w-full bg-dark border-2 rounded-lg overflow-hidden transition-all duration-300 transform ${currentTheme.border} ${currentTheme.shadow}`;
-        titleIcon.className = `fas fa-play-circle ${currentTheme.icon}`;
+        if (modalContainer) {
+            modalContainer.className = `relative max-w-4xl w-full bg-dark border-2 rounded-lg overflow-hidden transition-all duration-300 transform ${currentTheme.border} ${currentTheme.shadow}`;
+        }
+        if (titleIcon) {
+            titleIcon.className = `fas fa-play-circle ${currentTheme.icon}`;
+        }
 
         modal.classList.remove('hidden');
         setTimeout(() => {
             modal.classList.remove('opacity-0');
-            modalContainer.classList.remove('translate-y-4', 'scale-95');
-            modalContainer.classList.add('translate-y-0', 'scale-100');
-            
-            player.play().catch(err => console.log("자동 재생 정책으로 일시 중지됨:", err));
+            if (modalContainer) {
+                modalContainer.classList.remove('translate-y-4', 'scale-95');
+                modalContainer.classList.add('translate-y-0', 'scale-100');
+            }
         }, 10);
     };
 
     window.closeVideoModal = function () {
         const modal = document.getElementById('video-modal');
         const modalContainer = document.getElementById('video-modal-container');
-        const player = document.getElementById('custom-video-player');
+        const playerContainer = document.getElementById('video-player-container');
 
-        if (!modal || !player) return;
-
-        player.pause();
-        player.currentTime = 0;
+        if (!modal) return;
 
         modal.classList.add('opacity-0');
-        if(modalContainer) {
+        if (modalContainer) {
             modalContainer.classList.remove('translate-y-0', 'scale-100');
             modalContainer.classList.add('translate-y-4', 'scale-95');
         }
 
         setTimeout(() => {
             modal.classList.add('hidden');
+            // iframe 제거를 통해 모달을 닫았을 때 유튜브 오디오가 멈추도록 함
+            if (playerContainer) {
+                playerContainer.innerHTML = '';
+            }
         }, 300);
     };
 
