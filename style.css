@@ -1,0 +1,301 @@
+/* --- Global Settings --- */
+body {
+    background-color: #050a0e;
+    color: #e2e8f0;
+    overflow-x: hidden;
+}
+
+/* --- Background Effects --- */
+.cyber-grid-bg {
+    background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    background-position: center center;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+.scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.15) 0px, rgba(0, 0, 0, 0.15) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 99;
+}
+
+/* --- Cyberpunk Glitch Text Effect --- */
+.glitch-text {
+    position: relative;
+    display: inline-block;
+    animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+    .glitch-text::before,
+    .glitch-text::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        clip: rect(0, 0, 0, 0);
+    }
+
+    .glitch-text::before {
+        left: -2px;
+        text-shadow: 2px 0 #ff00ff;
+        animation: glitch-anim-1 2s infinite linear alternate-reverse;
+    }
+
+    .glitch-text::after {
+        left: 2px;
+        text-shadow: -2px 0 #00f3ff;
+        animation: glitch-anim-2 3s infinite linear alternate-reverse;
+    }
+
+@keyframes glitch-anim {
+    0% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(-2px, 1px);
+    }
+
+    40% {
+        transform: translate(-1px, -1px);
+    }
+
+    60% {
+        transform: translate(2px, 1px);
+    }
+
+    80% {
+        transform: translate(1px, -2px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+@keyframes glitch-anim-1 {
+    0% {
+        clip: rect(20px, 9999px, 40px, 0);
+    }
+
+    20% {
+        clip: rect(60px, 9999px, 80px, 0);
+    }
+
+    40% {
+        clip: rect(10px, 9999px, 30px, 0);
+    }
+
+    60% {
+        clip: rect(50px, 9999px, 70px, 0);
+    }
+
+    80% {
+        clip: rect(30px, 9999px, 50px, 0);
+    }
+
+    100% {
+        clip: rect(0, 0, 0, 0);
+    }
+}
+
+@keyframes glitch-anim-2 {
+    0% {
+        clip: rect(15px, 9999px, 35px, 0);
+    }
+
+    25% {
+        clip: rect(55px, 9999px, 75px, 0);
+    }
+
+    50% {
+        clip: rect(5px, 9999px, 25px, 0);
+    }
+
+    75% {
+        clip: rect(45px, 9999px, 65px, 0);
+    }
+
+    100% {
+        clip: rect(0, 0, 0, 0);
+    }
+}
+
+/* --- Card Styles --- */
+.cyber-card {
+    position: relative;
+    border: 1px solid rgba(0, 243, 255, 0.15);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-color: rgba(13, 23, 29, 0.85);
+    backdrop-filter: blur(8px);
+}
+
+    .cyber-card:hover {
+        box-shadow: 0 0 35px rgba(0, 243, 255, 0.35);
+        border-color: #00f3ff;
+        transform: translateY(-8px);
+    }
+
+/* --- Image Carousel (Gallery) --- */
+.carousel-track-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+    .carousel-track-container:hover .carousel-track {
+        animation-play-state: paused;
+    }
+
+.carousel-track {
+    display: flex;
+    width: max-content;
+    animation: scroll-rtl linear infinite;
+}
+
+    .carousel-track img {
+        height: 180px;
+        width: auto;
+        margin-right: 20px;
+        flex-shrink: 0;
+        border: 1px solid #333;
+        border-radius: 4px;
+        transition: all 0.3s;
+        filter: grayscale(80%) brightness(0.8);
+        cursor: zoom-in;
+    }
+
+@media (max-width: 767px) {
+    .carousel-track img {
+        height: 120px;
+        margin-right: 10px;
+    }
+}
+
+.carousel-track img:hover {
+    filter: grayscale(0%) brightness(1.2);
+    border-color: #00f3ff;
+    box-shadow: 0 0 15px #00f3ff;
+    transform: scale(1.05);
+}
+
+@keyframes scroll-rtl {
+    0% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.track-slow {
+    animation: scroll-rtl linear infinite;
+    animation-duration: 60s;
+}
+
+.track-medium {
+    animation: scroll-rtl linear infinite;
+    animation-duration: 45s;
+}
+
+.track-fast {
+    animation: scroll-rtl linear infinite;
+    animation-duration: 30s;
+}
+
+/* --- Popup Styles --- */
+.popup-no-mask {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.popup-content {
+    position: absolute;
+    top: 80px;
+    left: 50px;
+    width: 350px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.15);
+    pointer-events: auto;
+    user-select: none;
+}
+
+.popup-body {
+    padding: 35px 20px;
+    text-align: center;
+    color: #000000;
+    cursor: move;
+}
+
+    .popup-body h2 {
+        font-size: 22px;
+        margin-bottom: 12px;
+        font-weight: bold;
+        color: #000;
+    }
+
+    .popup-body p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #333;
+    }
+
+.popup-footer {
+    height: 40px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 12px;
+    color: #666;
+}
+
+    .popup-footer label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+#today-check {
+    accent-color: #333;
+}
+
+.popup-footer button {
+    background: none;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+}
+
+.admin-btn {
+    font-size: 10px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+[contenteditable="true"]:focus {
+    outline: 2px solid #007bff;
+    background: rgba(0, 123, 255, 0.05);
+}

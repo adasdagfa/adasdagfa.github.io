@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>후기 작성 - 컴퓨터이리온</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; color: #333; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="text"], textarea, input[type="file"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        textarea { resize: vertical; height: 150px; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>컴퓨터이리온 후기 작성</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="name">이름 (또는 닉네임):</label>
+            <input type="text" id="name" name="name" required>
+            
+            <label for="content">후기 내용:</label>
+            <textarea id="content" name="content" required></textarea>
+            
+            <label for="image">사진 첨부 (선택):</label>
+            <input type="file" id="image" name="image" accept="image/*">
+            
+            <button type="submit">후기 제출</button>
+        </form>
+        <p style="margin-top:20px;"><a href="/reviews">← 후기 목록으로 돌아가기</a></p>
+    </div>
+</body>
+</html>
