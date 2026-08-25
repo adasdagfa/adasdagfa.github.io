@@ -3,8 +3,6 @@ body {
     background-color: #050a0e;
     color: #e2e8f0;
     overflow-x: hidden;
-    /* 기본적으로 auto를 사용하여 데스크탑에서만 커스텀 커서가 작동하도록 설정 */
-    cursor: auto;
 }
 
 /* --- Background Effects --- */
@@ -26,30 +24,55 @@ body {
     z-index: 99;
 }
 
-/* --- Animations & Effects --- */
+/* --- Cyberpunk Glitch Text Effect --- */
 .glitch-text {
-    animation: glitch 1.5s infinite alternate-reverse;
+    position: relative;
+    display: inline-block;
+    animation: glitch-anim 2.5s infinite linear alternate-reverse;
 }
 
-@keyframes glitch {
+    .glitch-text::before,
+    .glitch-text::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        clip: rect(0, 0, 0, 0);
+    }
+
+    .glitch-text::before {
+        left: -2px;
+        text-shadow: 2px 0 #ff00ff;
+        animation: glitch-anim-1 2s infinite linear alternate-reverse;
+    }
+
+    .glitch-text::after {
+        left: 2px;
+        text-shadow: -2px 0 #00f3ff;
+        animation: glitch-anim-2 3s infinite linear alternate-reverse;
+    }
+
+@keyframes glitch-anim {
     0% {
         transform: translate(0);
     }
 
     20% {
-        transform: translate(-2px, 2px);
+        transform: translate(-2px, 1px);
     }
 
     40% {
-        transform: translate(-2px, -2px);
+        transform: translate(-1px, -1px);
     }
 
     60% {
-        transform: translate(2px, 2px);
+        transform: translate(2px, 1px);
     }
 
     80% {
-        transform: translate(2px, -2px);
+        transform: translate(1px, -2px);
     }
 
     100% {
@@ -57,60 +80,68 @@ body {
     }
 }
 
+@keyframes glitch-anim-1 {
+    0% {
+        clip: rect(20px, 9999px, 40px, 0);
+    }
+
+    20% {
+        clip: rect(60px, 9999px, 80px, 0);
+    }
+
+    40% {
+        clip: rect(10px, 9999px, 30px, 0);
+    }
+
+    60% {
+        clip: rect(50px, 9999px, 70px, 0);
+    }
+
+    80% {
+        clip: rect(30px, 9999px, 50px, 0);
+    }
+
+    100% {
+        clip: rect(0, 0, 0, 0);
+    }
+}
+
+@keyframes glitch-anim-2 {
+    0% {
+        clip: rect(15px, 9999px, 35px, 0);
+    }
+
+    25% {
+        clip: rect(55px, 9999px, 75px, 0);
+    }
+
+    50% {
+        clip: rect(5px, 9999px, 25px, 0);
+    }
+
+    75% {
+        clip: rect(45px, 9999px, 65px, 0);
+    }
+
+    100% {
+        clip: rect(0, 0, 0, 0);
+    }
+}
+
 /* --- Card Styles --- */
 .cyber-card {
     position: relative;
-    border: 1px solid transparent;
-    transition: all 0.3s ease;
-    background-color: #0d171d;
+    border: 1px solid rgba(0, 243, 255, 0.15);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-color: rgba(13, 23, 29, 0.85);
+    backdrop-filter: blur(8px);
 }
 
     .cyber-card:hover {
-        box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+        box-shadow: 0 0 35px rgba(0, 243, 255, 0.35);
         border-color: #00f3ff;
-        transform: translateY(-5px);
+        transform: translateY(-8px);
     }
-
-        .cyber-card:hover:before {
-            transform: scaleX(1);
-        }
-
-/* --- Custom Cursor --- */
-.cursor-dot, .cursor-outline {
-    pointer-events: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    z-index: 10001;
-    transition: transform 0.1s ease, opacity 0.3s ease;
-}
-
-/* ⭐ 수정: 모바일 화면(767px 이하)에서는 커스텀 커서 숨김 및 기본 커서 제거 ⭐ */
-@media (max-width: 767px) {
-    .cursor-dot, .cursor-outline {
-        display: none !important;
-    }
-    /* 모바일에서 마우스/터치 포인터 완전히 숨김 */
-    body {
-        cursor: none !important;
-    }
-}
-
-.cursor-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #00f3ff;
-    box-shadow: 0 0 10px #00f3ff;
-}
-
-.cursor-outline {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #00f3ff;
-    transition: transform 0.3s ease-out, background-color 0.3s ease-out;
-}
 
 /* --- Image Carousel (Gallery) --- */
 .carousel-track-container {
@@ -119,7 +150,6 @@ body {
     position: relative;
 }
 
-    /* 마우스 올리면 멈춤 효과 */
     .carousel-track-container:hover .carousel-track {
         animation-play-state: paused;
     }
@@ -131,7 +161,7 @@ body {
 }
 
     .carousel-track img {
-        height: 180px; /* PC 기본 크기 */
+        height: 180px;
         width: auto;
         margin-right: 20px;
         flex-shrink: 0;
@@ -142,11 +172,10 @@ body {
         cursor: zoom-in;
     }
 
-/* ⭐ 수정: 모바일 갤러리 크기 조정 (767px 이하) ⭐ */
 @media (max-width: 767px) {
     .carousel-track img {
-        height: 120px; /* 모바일에서 이미지 높이 감소 */
-        margin-right: 10px; /* 모바일에서 간격 감소 */
+        height: 120px;
+        margin-right: 10px;
     }
 }
 
@@ -157,35 +186,32 @@ body {
     transform: scale(1.05);
 }
 
-/* ⭐ 무한 반복 애니메이션 정의 (JS에서 복제된 이미지 덕분에 끊김 없이 반복) ⭐ */
 @keyframes scroll-rtl {
     0% {
         transform: translateX(0%);
     }
 
     100% {
-        transform: translateX(-50%); /* 트랙의 절반만큼 이동 */
+        transform: translateX(-50%);
     }
 }
 
-
-/* ⭐ 트랙별 속도 설정 및 애니메이션 연결 (모두 R-to-L) ⭐ */
 .track-slow {
     animation: scroll-rtl linear infinite;
-    animation-duration: 60s; /* 느린 속도 */
+    animation-duration: 60s;
 }
 
 .track-medium {
     animation: scroll-rtl linear infinite;
-    animation-duration: 45s; /* 중간 속도 */
+    animation-duration: 45s;
 }
 
 .track-fast {
     animation: scroll-rtl linear infinite;
-    animation-duration: 30s; /* 빠른 속도 */
+    animation-duration: 30s;
 }
 
-/* 팝업 컨테이너: 화면 전체를 덮지만 클릭은 통과됨 */
+/* --- Popup Styles --- */
 .popup-no-mask {
     display: none;
     position: fixed;
@@ -194,21 +220,20 @@ body {
     width: 100%;
     height: 100%;
     z-index: 9999;
-    pointer-events: none; /* 컨테이너 자체는 클릭 통과 (뒷배경 클릭 가능) */
+    pointer-events: none;
 }
 
-/* 실제 팝업창: 여기는 클릭이 되어야 함 */
 .popup-content {
     position: absolute;
-    top: 80px; /* 이미지처럼 약간 위에서 떨어뜨림 */
-    left: 50px; /* 이미지처럼 왼쪽에서 띄움 */
+    top: 80px;
+    left: 50px;
     width: 350px;
     background: #ffffff;
     border: 1px solid #ddd;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0px 10px 30px rgba(0,0,0,0.15);
-    pointer-events: auto; /* 팝업창 안은 다시 클릭 가능하게 설정 */
+    pointer-events: auto;
     user-select: none;
 }
 
@@ -232,10 +257,9 @@ body {
         color: #333;
     }
 
-/* 하단 바: 연한 회색 */
 .popup-footer {
     height: 40px;
-    background: #f8f9fa; /* 아주 연한 회색 */
+    background: #f8f9fa;
     border-top: 1px solid #eee;
     display: flex;
     justify-content: space-between;
@@ -245,7 +269,6 @@ body {
     color: #666;
 }
 
-    /* 체크박스 & 버튼 */
     .popup-footer label {
         cursor: pointer;
         display: flex;
@@ -254,7 +277,7 @@ body {
     }
 
 #today-check {
-    accent-color: #333; /* 체크박스 포인트를 어두운 색으로 */
+    accent-color: #333;
 }
 
 .popup-footer button {
@@ -266,14 +289,12 @@ body {
     font-weight: bold;
 }
 
-/* 관리자 버튼 숨기기용 */
 .admin-btn {
     font-size: 10px;
     color: #ccc;
     cursor: pointer;
 }
 
-/* 편집 모드일 때 테두리 */
 [contenteditable="true"]:focus {
     outline: 2px solid #007bff;
     background: rgba(0, 123, 255, 0.05);

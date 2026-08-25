@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    // 1. AOS 애니메이션 초기화 (기존 코드)
+    // 1. AOS 애니메이션 초기화
     AOS.init({
         duration: 1000,
         once: false,
@@ -8,44 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         offset: 100,
     });
 
-    // 2. 커스텀 커서 로직 (모바일에서는 실행되지 않도록 수정)
-    const cursorDot = document.querySelector('.cursor-dot');
-    const cursorOutline = document.querySelector('.cursor-outline');
-
-    // ⭐ 수정: 모바일이 아닌 경우(768px 이상)에만 커스텀 커서 로직 실행 ⭐
-    if (cursorDot && cursorOutline && window.innerWidth >= 768) {
-        window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-
-            cursorDot.style.transform = `translate(${posX}px, ${posY}px)`;
-
-            // 아웃라인은 약간 늦게 따라오도록 지연
-            setTimeout(() => {
-                cursorOutline.style.transform = `translate(${posX}px, ${posY}px)`;
-            }, 80);
-        });
-
-        // 링크나 버튼 호버 시 커서 효과 변경
-        const hoverElements = document.querySelectorAll('a, button, .cyber-card');
-        hoverElements.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursorOutline.style.transform += ' scale(1.5)';
-                cursorOutline.style.backgroundColor = 'rgba(0, 243, 255, 0.1)';
-                cursorDot.style.backgroundColor = '#ff00ff';
-            });
-            el.addEventListener('mouseleave', () => {
-                // scale(1.5)를 정확하게 제거하여 원래 크기로 돌아가게 함
-                if (cursorOutline.style.transform.includes('scale(1.5)')) {
-                    cursorOutline.style.transform = cursorOutline.style.transform.replace(' scale(1.5)', '');
-                }
-                cursorOutline.style.backgroundColor = 'transparent';
-                cursorDot.style.backgroundColor = '#00f3ff';
-            });
-        });
-    }
-
-    // 3. 로딩 바 스크립트 및 캐러셀 이미지 복제 로직 (기존 코드 유지)
+    // 2. 로딩 바 스크립트 및 캐러셀 이미지 복제 로직
     const loadingBar = document.getElementById('loading-bar');
     const initialGameImages = document.querySelectorAll('.carousel-track img');
     let totalAssets = initialGameImages.length;
@@ -54,15 +17,17 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateLoadingBar() {
         loadedAssets++;
         const progress = (loadedAssets / totalAssets) * 100;
-        loadingBar.style.width = progress + '%';
+        if(loadingBar) loadingBar.style.width = progress + '%';
 
         if (loadedAssets >= totalAssets) {
             setupCarouselTracks();
             setTimeout(() => {
-                loadingBar.style.opacity = '0';
-                setTimeout(() => {
-                    loadingBar.style.display = 'none';
-                }, 300);
+                if(loadingBar) {
+                    loadingBar.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingBar.style.display = 'none';
+                    }, 300);
+                }
             }, 500);
         }
     }
@@ -92,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
 
-        // 이미지 복제 후 모든 캐러셀 이미지에 모달 이벤트 리스너를 다시 연결
         const allCarouselImgs = document.querySelectorAll(".carousel-track img");
         allCarouselImgs.forEach(img => {
             img.addEventListener('click', function (e) {
@@ -102,8 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
-    // 5. 네이버 지도 API 연동 (기존 코드 유지)
+    // 3. 네이버 지도 API 연동
     var targetLat = 35.719821400;
     var targetLng = 126.744099357;
 
@@ -130,12 +93,13 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 6. 이미지 확대 모달 (Lightbox) 기능 (기존 코드 유지)
+    // 4. 이미지 확대 모달 (Lightbox) 기능
     const modal = document.getElementById("image-modal");
     const modalImg = document.getElementById("modal-img");
     const modalClose = document.querySelector(".modal-close-btn");
 
     function openModal(imgElement) {
+        if(!modal) return;
         modal.classList.remove("hidden");
         modal.style.opacity = '0';
         setTimeout(() => {
@@ -147,8 +111,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function closeModal() {
+        if(!modal) return;
         modal.style.opacity = '0';
-        modalImg.style.transform = 'scale(0.95)';
+        if(modalImg) modalImg.style.transform = 'scale(0.95)';
         setTimeout(() => {
             modal.classList.add("hidden");
         }, 300);
@@ -166,9 +131,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 7. 방문자 카운터: CounterAPI.dev V2 로직 (기존 코드 유지)
+    // 5. 방문자 카운터: CounterAPI.dev V2 로직
     const countElement = document.getElementById('visitor-count-number');
-
     const YOUR_API_KEY = "ut_v51MEVP3IRZSPHtBOCddgX8Zqk3M3eCqXiW0cxDZ";
     const BASE_ENDPOINT = "https://api.counterapi.dev/v2/s-team-4-1812/컴퓨터-이리온-방문";
     const API_HIT_ENDPOINT = `${BASE_ENDPOINT}/up`;
@@ -218,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // 8. 로고 클릭 시 맨 위로 이동 (기존 코드 유지)
+    // 6. 로고 클릭 시 맨 위로 이동
     const logoLink = document.getElementById('logo-link');
     if (logoLink) {
         logoLink.addEventListener('click', (e) => {
@@ -230,29 +194,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ***************************************************************
-    // 9. 사이드 내비게이션 (스크롤 감지 및 부드러운 이동) 로직 추가
-    // ***************************************************************
-
+    // 7. 사이드 내비게이션 (스크롤 감지 및 부드러운 이동)
     const sideNavItems = document.querySelectorAll('#side-nav .nav-item');
-    // home 섹션을 포함하여 모든 섹션을 가져옵니다.
     const sections = document.querySelectorAll('header[id], section[id]');
 
-    // 활성 상태 스타일을 관리하는 함수
     function activateNavItem(targetId) {
         sideNavItems.forEach(item => {
             const dot = item.querySelector('.nav-dot');
             const text = item.querySelector('.nav-text');
 
-            // 모든 항목의 활성 스타일 제거
             dot.classList.remove('active-pulse');
             dot.classList.remove('bg-neon-cyan', 'border-neon-cyan');
             dot.classList.add('bg-white/20', 'border-white/50');
             text.classList.remove('text-neon-cyan', 'opacity-100');
             text.classList.add('text-white', 'opacity-80');
 
-
-            // 현재 활성화된 항목에 스타일 추가
             if (item.getAttribute('data-target') === targetId) {
                 dot.classList.add('active-pulse');
                 dot.classList.add('bg-neon-cyan', 'border-neon-cyan');
@@ -263,7 +219,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 9-1. 부드러운 스크롤 (클릭 시 이동)
     sideNavItems.forEach(item => {
         item.addEventListener('click', function (e) {
             e.preventDefault();
@@ -271,12 +226,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const targetElement = document.getElementById(targetId);
 
             if (targetElement) {
-                // 활성 스타일을 즉시 적용하여 사용자에게 피드백 제공
                 activateNavItem(targetId);
-
-                // 스크롤 시 헤더 높이를 고려하여 60px 띄웁니다.
                 const offset = targetId === 'home' ? 0 : 60;
-
                 window.scrollTo({
                     top: targetElement.offsetTop - offset,
                     behavior: 'smooth'
@@ -285,13 +236,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-
-    // 9-2. 스크롤 감지 및 항목 활성화 (Intersection Observer 사용)
     const observerOptions = {
-        root: null, // 뷰포트를 기준으로 감지
-        // 뷰포트의 상단 100px 지점부터 뷰포트 하단 30% 지점 사이를 기준으로 감지
+        root: null,
         rootMargin: '-100px 0px -30% 0px',
-        threshold: 0 // 섹션이 rootMargin 범위에 조금이라도 들어오면 감지
+        threshold: 0
     };
 
     let activeSectionId = null;
@@ -299,23 +247,100 @@ document.addEventListener("DOMContentLoaded", function () {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // 현재 진입한 섹션의 ID를 활성 ID로 설정
                 activeSectionId = entry.target.id;
             }
         });
 
-        // 가장 최근에 활성화된 섹션을 기반으로 메뉴 항목 업데이트
         if (activeSectionId) {
             activateNavItem(activeSectionId);
         }
     }, observerOptions);
 
-    // 모든 섹션에 관찰자 등록
     sections.forEach(section => {
         observer.observe(section);
     });
 
-    // 9-3. 새로운 스타일: 네온 반짝임 효과를 위한 CSS 키프레임 추가
+    // 8. 동영상 전용 모달 제어 함수
+    window.openVideoModal = function (videoSrc, titleText, colorTheme) {
+        const modal = document.getElementById('video-modal');
+        const modalContainer = document.getElementById('video-modal-container');
+        const modalTitle = document.getElementById('video-modal-title').querySelector('span');
+        const titleIcon = document.getElementById('video-title-icon');
+        const player = document.getElementById('custom-video-player');
+        const source = document.getElementById('video-source');
+
+        if (!modal || !player || !source) return;
+
+        source.src = videoSrc;
+        player.load();
+        modalTitle.textContent = titleText;
+
+        const themeMap = {
+            pink: { border: 'border-neon-pink', shadow: 'shadow-[0_0_50px_rgba(255,0,255,0.4)]', icon: 'text-neon-pink' },
+            green: { border: 'border-neon-green', shadow: 'shadow-[0_0_50px_rgba(0,255,136,0.4)]', icon: 'text-neon-green' },
+            purple: { border: 'border-neon-purple', shadow: 'shadow-[0_0_50px_rgba(157,0,255,0.4)]', icon: 'text-neon-purple' }
+        };
+
+        const currentTheme = themeMap[colorTheme] || themeMap.pink;
+
+        modalContainer.className = `relative max-w-4xl w-full bg-dark border-2 rounded-lg overflow-hidden transition-all duration-300 transform ${currentTheme.border} ${currentTheme.shadow}`;
+        titleIcon.className = `fas fa-play-circle ${currentTheme.icon}`;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modalContainer.classList.remove('translate-y-4', 'scale-95');
+            modalContainer.classList.add('translate-y-0', 'scale-100');
+            
+            player.play().catch(err => console.log("자동 재생 정책으로 일시 중지됨:", err));
+        }, 10);
+    };
+
+    window.closeVideoModal = function () {
+        const modal = document.getElementById('video-modal');
+        const modalContainer = document.getElementById('video-modal-container');
+        const player = document.getElementById('custom-video-player');
+
+        if (!modal || !player) return;
+
+        player.pause();
+        player.currentTime = 0;
+
+        modal.classList.add('opacity-0');
+        if(modalContainer) {
+            modalContainer.classList.remove('translate-y-0', 'scale-100');
+            modalContainer.classList.add('translate-y-4', 'scale-95');
+        }
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    };
+
+    const closeVidBtn = document.getElementById('close-video-modal');
+    if (closeVidBtn) {
+        closeVidBtn.addEventListener('click', closeVideoModal);
+    }
+
+    const videoModal = document.getElementById('video-modal');
+    if (videoModal) {
+        videoModal.addEventListener('click', (e) => {
+            if (e.target.id === 'video-modal') {
+                closeVideoModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const videoModal = document.getElementById('video-modal');
+            if (videoModal && !videoModal.classList.contains('hidden')) {
+                closeVideoModal();
+            }
+        }
+    });
+
+    // 9. CSS 애니메이션 추가
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
     styleSheet.innerText = `
@@ -334,23 +359,25 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(styleSheet);
 });
 
+// 공지 팝업 드래그 로직
 document.addEventListener("DOMContentLoaded", function () {
     const popup = document.getElementById('popup');
     const content = document.querySelector('.popup-content');
     const body = document.querySelector('.popup-body');
 
-    // 1. 노출 여부 확인
+    if (!popup || !content || !body) return;
+
     const now = new Date().getTime();
     const expireTime = localStorage.getItem('popupExpireTime');
     if (!expireTime || now > expireTime) {
         popup.style.display = 'block';
     }
 
-    // 2. 드래그 로직 (중앙 정렬 해제 버전)
     let isDragging = false;
     let offsetX, offsetY;
 
     body.addEventListener('mousedown', (e) => {
+        if (e.target.contentEditable === 'true') return;
         isDragging = true;
         offsetX = e.clientX - content.getBoundingClientRect().left;
         offsetY = e.clientY - content.getBoundingClientRect().top;
@@ -368,13 +395,3 @@ document.addEventListener("DOMContentLoaded", function () {
         content.style.cursor = 'move';
     });
 });
-
-function closePopup() {
-    const popup = document.getElementById('popup');
-    const isChecked = document.getElementById('today-check').checked;
-    if (isChecked) {
-        const expiryDate = new Date().getTime() + (24 * 60 * 60 * 1000);
-        localStorage.setItem('popupExpireTime', expiryDate);
-    }
-    popup.style.display = 'none';
-}
