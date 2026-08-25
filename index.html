@@ -17,27 +17,27 @@
     <link rel="stylesheet" href="style.css">
 
     <script>
-                tailwind.config = {
-                    darkMode: 'class',
-                    theme: {
-                        extend: {
-                            fontFamily: {
-                                cyber: ['Orbitron', 'sans-serif'],
-                                tech: ['Rajdhani', 'sans-serif'],
-                                kr: ['Noto Sans KR', 'sans-serif'],
-                            },
-                            colors: {
-                                neon: {
-                                    cyan: '#00f3ff',
-                                    pink: '#ff00ff',
-                                    purple: '#9d00ff',
-                                    green: '#00ff88',
-                                },
-                                dark: '#050a0e',
+                        tailwind.config = {
+                            darkMode: 'class',
+                            theme: {
+                                extend: {
+                                    fontFamily: {
+                                        cyber: ['Orbitron', 'sans-serif'],
+                                        tech: ['Rajdhani', 'sans-serif'],
+                                        kr: ['Noto Sans KR', 'sans-serif'],
+                                    },
+                                    colors: {
+                                        neon: {
+                                            cyan: '#00f3ff',
+                                            pink: '#ff00ff',
+                                            purple: '#9d00ff',
+                                            green: '#00ff88',
+                                        },
+                                        dark: '#050a0e',
+                                    }
+                                }
                             }
                         }
-                    }
-                }
     </script>
 </head>
 <body class="font-kr selection:bg-neon-pink selection:text-white bg-dark">
@@ -56,7 +56,7 @@
 
     <!-- 사이버펑크 동영상 재생 모달 -->
     <div id="video-modal" class="fixed inset-0 bg-black/90 z-[10001] hidden flex items-center justify-center p-4 backdrop-blur-md transition-opacity duration-300 opacity-0">
-        <div id="video-modal-container" class="relative max-w-4xl w-full bg-dark border-2 rounded-lg overflow-hidden shadow-2xl transform translate-y-4 transition-all duration-300 scale-95 border-neon-pink shadow-[0_0_50px_rgba(255,0,255,0.4)]">
+        <div id="video-modal-container" class="relative max-w-5xl w-full bg-dark border-2 rounded-lg overflow-hidden shadow-2xl transform translate-y-4 transition-all duration-300 scale-95 border-neon-pink shadow-[0_0_50px_rgba(255,0,255,0.4)]">
             <!-- 모달 헤더 -->
             <div class="p-4 bg-black/90 border-b border-white/10 flex justify-between items-center">
                 <h3 id="video-modal-title" class="font-cyber text-lg md:text-xl font-bold text-white flex items-center gap-2">
@@ -171,7 +171,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- 1. PC 수리 카드 -->
                 <div class="cyber-card p-8 group border-l-4 border-neon-pink cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(255,0,255,0.4)]"
-                     onclick="openVideoModal('https://www.youtube.com/embed/Zt0NmPWBY_I?autoplay=1', 'PC 수리 안내 영상', 'pink')"
+                     onclick="openVideoModal('https://www.youtube.com/embed/Zt0NmPWBY_I?autoplay=1&mute=1', 'PC 수리 안내 영상', 'pink')"
                      data-aos="flip-left" data-aos-delay="100">
                     <div class="flex justify-between items-start mb-6">
                         <div class="text-5xl text-neon-pink group-hover:scale-110 transition-transform">
@@ -189,7 +189,7 @@
 
                 <!-- 2. 맞춤형 조립 PC 카드 -->
                 <div class="cyber-card p-8 group border-l-4 border-neon-green cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(0,255,136,0.4)]"
-                     onclick="openVideoModal('https://www.youtube.com/embed/DATXgzkFAaM?autoplay=1', '맞춤형 조립 안내 영상', 'green')"
+                     onclick="openVideoModal('https://www.youtube.com/embed/DATXgzkFAaM?autoplay=1&mute=1', '맞춤형 조립 안내 영상', 'green')"
                      data-aos="flip-left" data-aos-delay="200">
                     <div class="flex justify-between items-start mb-6">
                         <div class="text-5xl text-neon-green group-hover:scale-110 transition-transform">
@@ -207,7 +207,7 @@
 
                 <!-- 3. 설치 및 OS 세팅 카드 -->
                 <div class="cyber-card p-8 group border-l-4 border-neon-purple cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(157,0,255,0.4)]"
-                     onclick="openVideoModal('https://www.youtube.com/embed/E9443OclUYg?autoplay=1', 'OS 설치 및 세팅 안내 영상', 'purple')"
+                     onclick="openVideoModal('https://www.youtube.com/embed/E9443OclUYg?autoplay=1&mute=1', 'OS 설치 및 세팅 안내 영상', 'purple')"
                      data-aos="flip-left" data-aos-delay="300">
                     <div class="flex justify-between items-start mb-6">
                         <div class="text-5xl text-neon-purple group-hover:scale-110 transition-transform">
@@ -425,81 +425,81 @@
     </div>
 
     <script type="module">
-                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
-                import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+                        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+                        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
 
-                const firebaseConfig = {
-                    apiKey: "AIzaSyBwDiUTg4mEaBfAmitoGuU0fsf108HEyhc",
-                    authDomain: "irion-7d60d.firebaseapp.com",
-                    projectId: "irion-7d60d",
-                    databaseURL: "https://irion-7d60d-default-rtdb.firebaseio.com/",
-                    storageBucket: "irion-7d60d.firebasestorage.app",
-                    messagingSenderId: "425804219826",
-                    appId: "1:425804219826:web:3ae3ffcf9d51544f9f50ab",
-                    measurementId: "G-4THGNDKB25"
-                };
+                        const firebaseConfig = {
+                            apiKey: "AIzaSyBwDiUTg4mEaBfAmitoGuU0fsf108HEyhc",
+                            authDomain: "irion-7d60d.firebaseapp.com",
+                            projectId: "irion-7d60d",
+                            databaseURL: "https://irion-7d60d-default-rtdb.firebaseio.com/",
+                            storageBucket: "irion-7d60d.firebasestorage.app",
+                            messagingSenderId: "425804219826",
+                            appId: "1:425804219826:web:3ae3ffcf9d51544f9f50ab",
+                            measurementId: "G-4THGNDKB25"
+                        };
 
-                const app = initializeApp(firebaseConfig);
-                const db = getDatabase(app);
-                const popupRef = ref(db, 'popupData');
+                        const app = initializeApp(firebaseConfig);
+                        const db = getDatabase(app);
+                        const popupRef = ref(db, 'popupData');
 
-                const ADMIN_PASSWORD = "irion123";
-                const popup = document.getElementById('popup');
-                const editTitle = document.getElementById('edit-title');
-                const editText = document.getElementById('edit-text');
+                        const ADMIN_PASSWORD = "irion123";
+                        const popup = document.getElementById('popup');
+                        const editTitle = document.getElementById('edit-title');
+                        const editText = document.getElementById('edit-text');
 
-                onValue(popupRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        editTitle.innerHTML = data.title;
-                        editText.innerHTML = data.text;
-                    }
+                        onValue(popupRef, (snapshot) => {
+                            const data = snapshot.val();
+                            if (data) {
+                                editTitle.innerHTML = data.title;
+                                editText.innerHTML = data.text;
+                            }
 
-                    const expireTime = localStorage.getItem('popupExpireTime');
-                    if (!expireTime || new Date().getTime() > expireTime) {
-                        popup.style.display = 'block';
-                    }
-                });
+                            const expireTime = localStorage.getItem('popupExpireTime');
+                            if (!expireTime || new Date().getTime() > expireTime) {
+                                popup.style.display = 'block';
+                            }
+                        });
 
-                document.getElementById('admin-login-btn').addEventListener('click', () => {
-                    if (prompt("관리자 비밀번호를 입력하세요.") === ADMIN_PASSWORD) {
-                        alert("수정 모드 활성화! 글자를 클릭해 수정 후 닫기를 누르세요.");
-                        editTitle.contentEditable = "true";
-                        editText.contentEditable = "true";
-                        editTitle.style.border = "1px dashed #ccc";
-                        editText.style.border = "1px dashed #ccc";
-                    }
-                });
+                        document.getElementById('admin-login-btn').addEventListener('click', () => {
+                            if (prompt("관리자 비밀번호를 입력하세요.") === ADMIN_PASSWORD) {
+                                alert("수정 모드 활성화! 글자를 클릭해 수정 후 닫기를 누르세요.");
+                                editTitle.contentEditable = "true";
+                                editText.contentEditable = "true";
+                                editTitle.style.border = "1px dashed #ccc";
+                                editText.style.border = "1px dashed #ccc";
+                            }
+                        });
 
-                document.getElementById('close-btn').addEventListener('click', () => {
-                    const isChecked = document.getElementById('today-check').checked;
+                        document.getElementById('close-btn').addEventListener('click', () => {
+                            const isChecked = document.getElementById('today-check').checked;
 
-                    if (editTitle.contentEditable === "true") {
-                        set(popupRef, {
-                            title: editTitle.innerHTML,
-                            text: editText.innerHTML
-                        }).then(() => alert("전 세계 방문자에게 공지가 업데이트되었습니다."));
-                    }
+                            if (editTitle.contentEditable === "true") {
+                                set(popupRef, {
+                                    title: editTitle.innerHTML,
+                                    text: editText.innerHTML
+                                }).then(() => alert("전 세계 방문자에게 공지가 업데이트되었습니다."));
+                            }
 
-                    if (isChecked) {
-                        const expiryDate = new Date().getTime() + (24 * 60 * 60 * 1000);
-                        localStorage.setItem('popupExpireTime', expiryDate);
-                    }
-                    popup.style.display = 'none';
-                });
+                            if (isChecked) {
+                                const expiryDate = new Date().getTime() + (24 * 60 * 60 * 1000);
+                                localStorage.setItem('popupExpireTime', expiryDate);
+                            }
+                            popup.style.display = 'none';
+                        });
 
-                makeDraggable(document.querySelector('.popup-content'), document.querySelector('.popup-body'));
+                        makeDraggable(document.querySelector('.popup-content'), document.querySelector('.popup-body'));
 
-                function makeDraggable(el, handle) {
-                    let isDragging = false, ox, oy;
-                    handle.onmousedown = (e) => {
-                        if (e.target.contentEditable === 'true') return;
-                        isDragging = true;
-                        ox = e.clientX - el.offsetLeft; oy = e.clientY - el.offsetTop;
-                    };
-                    window.onmousemove = (e) => { if (isDragging) { el.style.left = (e.clientX - ox) + 'px'; el.style.top = (e.clientY - oy) + 'px'; el.style.transform = 'none'; } };
-                    window.onmouseup = () => isDragging = false;
-                }
+                        function makeDraggable(el, handle) {
+                            let isDragging = false, ox, oy;
+                            handle.onmousedown = (e) => {
+                                if (e.target.contentEditable === 'true') return;
+                                isDragging = true;
+                                ox = e.clientX - el.offsetLeft; oy = e.clientY - el.offsetTop;
+                            };
+                            window.onmousemove = (e) => { if (isDragging) { el.style.left = (e.clientX - ox) + 'px'; el.style.top = (e.clientY - oy) + 'px'; el.style.transform = 'none'; } };
+                            window.onmouseup = () => isDragging = false;
+                        }
     </script>
 </body>
 </html>
